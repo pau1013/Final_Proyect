@@ -1,10 +1,10 @@
 import os
 import psutil
-import time
+from time import time
 from threading import Thread
 
-
-class procs:
+tiempo_inicial=time()
+class procs: #proc es un objeto de la clase psutil del cual podemos obtener toda la informacion de un proceso
     def __init__(self,proc):
         self.proc=proc
         self.username=proc.username()
@@ -25,10 +25,10 @@ class Lista:
         self.head=None
 
 
-    def insertar(self,valor,Posicion):
+    def insertar(self,proc,Posicion): # agregaa un proc a la lista, eventualmente lo necesitaremos para actualizar
         temp=self.head
         cont=0
-        nodo=procs(valor)
+        nodo=procs(proc)
 
 
         if Posicion <= self.length() and Posicion != 0:
@@ -51,7 +51,7 @@ class Lista:
 
 
 
-    def Ordenar(self,PID,CPU,MEM):
+    def Ordenar(self,PID,CPU,MEM): #Ordena la lista de menor a mayor de acuerdo a su pid,cpu,mem recibe boolean ejem(True,False,False)
         if PID==True:
             temp = self.Quicksort_interno_PID(self.Lista_desordenada())
         elif CPU==True:
@@ -78,7 +78,7 @@ class Lista:
             nodo_temp=nodo_temp.next
             count=count+1
 
-    def Lista_desordenada(self):
+    def Lista_desordenada(self): #Regresa una lista con todos los procs en su orden actual
         LISTA_DESORDENADA=[]
         temp=self.head
         while temp != None:
@@ -86,7 +86,7 @@ class Lista:
             temp=temp.next
         return LISTA_DESORDENADA
 
-    def Quicksort_interno_PID(self,list):
+    def Quicksort_interno_PID(self,list): #Ordena una lista
         if len(list) > 1:
             izquierda = []
             derecha = []
@@ -129,7 +129,7 @@ class Lista:
                 k = k + 1
         return list
 
-    def Quicksort_interno_CPU(self,list):
+    def Quicksort_interno_CPU(self,list): #Ordena una lista
         if len(list) > 1:
             izquierda = []
             derecha = []
@@ -172,7 +172,7 @@ class Lista:
                 k = k + 1
         return list
 
-    def Quicksort_interno_MEM(self,list):
+    def Quicksort_interno_MEM(self,list): #Ordena una lista
         if len(list) > 1:
             izquierda = []
             derecha = []
@@ -215,22 +215,9 @@ class Lista:
                 k = k + 1
         return list
 
-    def buscar(self,valor):
-        temp=self.head
-        encontrado=False
-        count=1
-        if temp!=None:
-            while encontrado==False and temp!=None:
-                if temp.numero==valor:
-                    encontrado=True
-                    print("El numero {0} se encuentra en la posicion {1}".format(valor,count))
-                count=count+1
-                temp=temp.next
-        if encontrado==False:
-            print("El numero no fue encontrado")
 
 
-    def remueve(self,pid):
+    def remueve(self,pid): #Remueve un proceso de la lista y luego lo cierra por su pid
         remov = self.busqueda_PID(pid)
 
 
@@ -248,7 +235,7 @@ class Lista:
             os.kill(pid,9)
 
 
-    def imprimir(self):
+    def imprimir(self): #Imprime los cambios, (lo necesitamos cambiar para que funcione en el GUI)
         temp=self.head
         string=""
         if temp!= None:
@@ -258,7 +245,7 @@ class Lista:
             print(string)
 
 
-    def agregar(self,proceso):
+    def agregar(self,proceso): #agrega un proc a la lista, solo se hace en la creacion
         proc = procs(proceso)
         if self.head == None:
             proc.posicion=0
@@ -278,7 +265,7 @@ class Lista:
 
 
 
-    def length(self):
+    def length(self): #largo de la lista
         temp=self.head
         count=0
         if temp !=None:
@@ -288,7 +275,7 @@ class Lista:
         return count
 
 
-    def busqueda_PID(self,valor):
+    def busqueda_PID(self,valor): #Regresa el proc anterior al que se busco, la lista funciona solo con next, era necesario para remover
         temp=self.head
         if temp != None:
             if (temp.pid==valor):
@@ -301,8 +288,15 @@ class Lista:
                 return temp
         return None
 
+    def Salvar(self): #Salva los resultados de cada proceso
+        archi=open("Task Manager Stats", "w")
+        proc_temp=self.head
+        while proc_temp!=None:
+            archi.write("USER: {0} PID: {1} CPU: {2} MEM: {3} NAME: {4}\n".format
+            (str(proc_temp.username),str(proc_temp.pid),str(proc_temp.cpu),str(proc_temp.mem),str(proc_temp.name)))
+            proc_temp=proc_temp.next
 
-def Crear_Lista():
+def Crear_Lista(): #Regresa una lista con todos los procesos actuales
     List=Lista()
     thread_procesos=[]
     for proc in psutil.process_iter():
@@ -330,4 +324,6 @@ Lista.Ordenar(True,False,False)
 #Lista.remueve(4819)
 #Lista.imprimir()
 
+tiempo_final=time()
 
+print tiempo_final-tiempo_inicial
