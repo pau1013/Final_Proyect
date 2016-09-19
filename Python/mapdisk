@@ -1,0 +1,17 @@
+import sys
+import mmap
+import os
+
+if(len(sys.argv) > 1):
+    STAT_FILE= sys.argv[1]
+    print STAT_FILE
+else:
+    sys.exit(1)
+
+with open(STAT_FILE, "r+b") as f:
+    m = mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ)
+    while True:
+        line = m.readline()
+        if line == "": break
+        #print line
+    m.close()
