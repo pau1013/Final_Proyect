@@ -43,4 +43,22 @@ funciones de python normales es posible crear el archivo.
 		count=count+1
 		time.sleep(300)
                     
+6) Research Charts Libs	
+	La libreria para generación de gráficos que vamos a usar es la de "matplotlib". Hay dos formas de instalarla en ubuntu: la primera es con el comando: python get-pip.py, con este comando también se instalan las setuptools necesarias si es que no están instaladas. 
+	La segunda y más segura es con dos comandos: 
+	sudo apt-get build-dep python-matplotlib (Este instala todas las dependenencias necesarias)
+	sudo apt-get install python-matplotlib
+	
+	Código de ejemplo: 
+		import matplotlib.pyplot as plt
+		
+		x = [1,2,3]
+		y = [5,7,4]
+		
+		plt.plot(y,x)
+		plt.xlabel('Numero')
+		plt.ylabel('Variable importante´)
+		plt.title('Procesos')
+		
+		plt.show()
 	
