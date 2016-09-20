@@ -2,8 +2,8 @@ import subprocess
 import os
 
 
-p = 'Primer_avance.md'
+p = 'README.md'
 o= os.path.abspath(p)
 print(o)
-a= subprocess.call(o)
+a= subprocess.Popen(o, shell=True)
 #print(a)
