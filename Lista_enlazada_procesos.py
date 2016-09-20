@@ -2,8 +2,11 @@ import os
 import psutil
 from time import time
 from threading import Thread
+from collections import namedtuple
 
 tiempo_inicial=time()
+DiskUsage = namedtuple('DiskUsage', 'total  used  free')
+
 class procs: #proc es un objeto de la clase psutil del cual podemos obtener toda la informacion de un proceso
     def __init__(self,proc):
         self.proc=proc
@@ -12,6 +15,8 @@ class procs: #proc es un objeto de la clase psutil del cual podemos obtener toda
         self.cpu=proc.cpu_percent()
         self.mem=proc.memory_percent()
         self.name=proc.name()
+        #self.mem_disk=proc.memory_maps()
+        #self.path=proc.PROCFS_PATH
 
         self.next = None
         self.prev=None
@@ -296,6 +301,16 @@ class Lista:
             (str(proc_temp.username),str(proc_temp.pid),str(proc_temp.cpu),str(proc_temp.mem),str(proc_temp.name)))
             proc_temp=proc_temp.next
 
+    def disk_usage(self):
+        d_usage = list(psutil.disk_usage('/'))
+
+        total = self(d_usage[0])
+        used = self(d_usage[1])
+        free = self(d_usage[2])
+        percent = self(d_usage[3])
+
+        return total, used, free, percent
+
 def Crear_Lista(): #Regresa una lista con todos los procesos actuales
     List=Lista()
     thread_procesos=[]
@@ -309,6 +324,8 @@ def Crear_Lista(): #Regresa una lista con todos los procesos actuales
         thread_proceso.join()
 
     return List
+
+
 
 
 
