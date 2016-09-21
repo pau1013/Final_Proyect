@@ -63,6 +63,36 @@ funciones de python normales es posible crear el archivo.
 			str(procs.memory_percent()),str(procs.name())))
 		count=count+1
 		time.sleep(300)
+5)Map Disk 
+	Para obtener los porcentajes se puede utilizar la libreria os o por medio de la psutil la cual tiene un modulo para obtener el path de cada proceso y sacar cuando espacio tiene en memoria,
+un par de ejemplos de codigo para esta funcion podrian ser:
+		import os
+from collections import namedtuple
+
+
+DiskUsage = namedtuple('DiskUsage', 'total  used  free')
+
+def disk_usage(path):
+    size = os.statvfs(path)
+    free = (size.f_bavail * size.f_frsize) / 1024
+    total = (size.f_blocks * size.f_frsize) / 1024
+    used = (total - free)
+    return DiskUsage(total, used, free)
+
+
+print disk_usage('./')
+
+O dentro de la lista enlazada de procs: 
+    def disk_usage(self):
+        d_usage = list(psutil.disk_usage('/'))
+
+        total = self(d_usage[0])
+        used = self(d_usage[1])
+        free = self(d_usage[2])
+        percent = self(d_usage[3])
+
+        return total, used, free, percent
+
                     
 6) Research Charts Libs	
 	La libreria para generación de gráficos que vamos a usar es la de "matplotlib". Hay dos formas de instalarla en ubuntu: la primera es con el comando: python get-pip.py, con este comando también se instalan las setuptools necesarias si es que no están instaladas. 
