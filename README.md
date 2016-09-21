@@ -21,8 +21,29 @@ psutil incluso dentro de la lista. Ejem lista[1].memory_percent()
 lo cual nos deja comparar las diversas posiciones y utilizar un metodo de sort
 como burbuja,merge,quicksort para acomodar.
 
+2) Kill Process
+	Para matar un proceso se puede utilizar el modulo os llamandolo como:
+		
+		os.kill(pid,sig)
+
+	Es necesario mandar una senal predeterminada para que este lo ejecute, matando asi el proceso(pid) que desees eliminar. 
+En el caso de este programa se utilizo como senal = 9. 
+
+3) Create Process
+	Para crear un proceso se utilizo el modulo de subprocess, en este caso se utiliza subproces.Popen.
+Se pretende leer el README de este proyecto, es decir, a traves de este programa obtendremos el "path" en donde
+se encuentra el archivo y por medio de subprocess lo mandaremos llamar. 
+
+Ejemplo: 
+
+	import subprocess
+	import os
+
+	p = 'README.md'
+	o= os.path.abspath(p) #Aqui se obtiene la direccion donde esta guardado el archivo
+	a = subprocess.Popen(o)	
 	
-3) Save everything
+4) Save everything
 	Para salvar los resultados actuales se puede crear un archivo de 
 texto y agregar los resultados de los procesos cada cierto tiempo. Con las 
 funciones de python normales es posible crear el archivo.
