@@ -26,7 +26,10 @@ class App:
         self.button=Tkinter.Button(frame,text="REFRESH", fg='blue',
                                    command=self.Map_Disk)
         self.button.pack(side=Tkinter.TOP)
-        img=ImageTk.PhotoImage(Image.open('Map_Disk.png'))
+        if os.path.isfile("Map_Disk.png") is False:
+            img=None
+        else:
+            img=ImageTk.PhotoImage(Image.open('Map_Disk.png'))
         self.panel=Tkinter.Label(frame,image=img)
         self.image=img
         self.panel.pack(side=Tkinter.BOTTOM,fill='both',expand='yes')
@@ -38,31 +41,27 @@ class App:
         mapa = ["*.doc", "*.txt", "*.xml", "*.exc", "*.pdf", "*.dochtml", "*.dic", "*.idx", "*.rtf", "*.wri", "*.wtx",
                 "*.log", "*.zip", "*.rar", "*.zoo", "*.tgz", "*.tar", "*.uu", "*.xxe", "*.r0", "*.tbz2", "*.avi",
                 "*.iso", "*.arj"]
-        for n in mapa:
-            cont = cont + self.get_mapa(n)
+        cont = self.get_mapa(mapa)
         lista.append(cont)
         cont = 0
 
         print("Imagenes: ")
         mapa = ["*.png", "*.jpg", "*.jpeg", "*.gif", "*.bmp", "*.dib", "*.tif", "*.bw", "*.cdr", "*.cgm", "*.gih",
                 "*.ico", "*.iff", "*.cpt", "*.mac", "*.pic", "*.pict", "*.pntg", "*.psd", "*.pix"]
-        for n in mapa:
-            cont = cont + self.get_mapa(n)
+        cont = self.get_mapa(mapa)
         lista.append(cont)
         cont = 0
 
         print("Videos: ")
         mapa = ["*.avi", "*.mov", "*.wmv", "*.mng", "*.qt", "*.dvd", "*.movie", "*.mpeg", "*.mpa", "*.mpv2", "*.divx",
                 "*.div", "*.mp2v", "*.bik"]
-        for n in mapa:
-            cont = cont + self.get_mapa(n)
+        cont = self.get_mapa(mapa)
         lista.append(cont)
         cont = 0
 
         print("Musica: ")
         mapa = ["*.mp3", "*.au", "*.wav", "*.mid", "*.aiff", "*.it"]
-        for n in mapa:
-            cont = cont + self.get_mapa(n)
+        cont = self.get_mapa(mapa)
         lista.append(cont)
         cont = 0
 
@@ -90,8 +89,9 @@ class App:
     def get_mapa(self,m):
         cont = 0
         for root, dirnames, filenames in os.walk(raiz):
-            for filename in fnmatch.filter(filenames, m):
-                cont = cont + os.stat(os.path.join(root, filename)).st_size
+            for extension in m:
+                for filename in fnmatch.filter(filenames, extension):
+                    cont = cont + os.stat(os.path.join(root, filename)).st_size
         return cont
 
 root=Tkinter.Tk()
