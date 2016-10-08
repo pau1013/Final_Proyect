@@ -13,7 +13,7 @@ py.sign_in('pau1013','tnfc99jciz')
 
 
 mapa = []
-raiz = '/home'
+raiz = '/'
 
 
 
@@ -34,20 +34,27 @@ class App:
         self.image=img
         self.panel.pack(side=Tkinter.BOTTOM,fill='both',expand='yes')
 
+
+
     def Map_Disk(self):
         lista = []
         cont = 0
+        print("Apps: ")
+        cont =self.get_app()
+        lista.append(cont)
+        cont =0
+
         print('Archivos: ')
-        mapa = ["*.doc", "*.txt", "*.xml", "*.exc", "*.pdf", "*.dochtml", "*.dic", "*.idx", "*.rtf", "*.wri", "*.wtx",
+        mapa = ["*.doc", "*.txt", "*.xml","*.exc", "*.pdf", "*.dochtml", "*.dic", "*.idx", "*.rtf", "*.wri", "*.wtx",
                 "*.log", "*.zip", "*.rar", "*.zoo", "*.tgz", "*.tar", "*.uu", "*.xxe", "*.r0", "*.tbz2", "*.avi",
-                "*.iso", "*.arj"]
+                "*.iso", "*.arj", "*.lha", ".*r00", "*.r01"]
         cont = self.get_mapa(mapa)
         lista.append(cont)
         cont = 0
 
         print("Imagenes: ")
         mapa = ["*.png", "*.jpg", "*.jpeg", "*.gif", "*.bmp", "*.dib", "*.tif", "*.bw", "*.cdr", "*.cgm", "*.gih",
-                "*.ico", "*.iff", "*.cpt", "*.mac", "*.pic", "*.pict", "*.pntg", "*.psd", "*.pix"]
+                "*.ico", "*.iff", "*.cpt", "*.mac", "*.pic", "*.pict", "*.pntg", "*.psd", "*.pix", "*.img"]
         cont = self.get_mapa(mapa)
         lista.append(cont)
         cont = 0
@@ -67,19 +74,25 @@ class App:
 
         for i in range(len(lista)):
             cont=cont+lista[i]
-        total=psutil.virtual_memory().total
-        free=psutil.virtual_memory().free
+        d_usage = list(psutil.disk_usage('/'))
 
-        free_space=total-free-cont
-        lista.append(free_space)
+        total =(d_usage[0])
+
+        free = (d_usage[2])
+
+        print total
+
+        other=total-free-cont
+        lista.append(other)
         lista.append(free)
         print(lista)
 
-        Labels = ['Archivos', 'Imagenes', 'Videos', 'Musica','Other','Free']
+        Labels = ['Apps','Archivos', 'Imagenes', 'Videos', 'Musica','Other','Free']
         fig = {
             'data': [{'labels': Labels,
                       'values': lista,
-                      'type': 'pie'}]
+                      'type': 'pie'}],
+            'layout': {'title': 'Disk Mapping'}
         }
         py.image.save_as(fig, 'Map_Disk.png')
         img=ImageTk.PhotoImage(Image.open('Map_Disk.png'))
@@ -91,6 +104,17 @@ class App:
         for root, dirnames, filenames in os.walk(raiz):
             for extension in m:
                 for filename in fnmatch.filter(filenames, extension):
+                    try:
+                        cont = cont + os.stat(os.path.join(root, filename)).st_size
+                    except:
+                        pass
+        return cont
+
+    def get_app(self):
+        cont = 0
+        for root, dirnames, filenames in os.walk(raiz):
+            for filename in filenames:
+                if os.access(os.path.join(root,filename),os.X_OK) is True:
                     cont = cont + os.stat(os.path.join(root, filename)).st_size
         return cont
 
