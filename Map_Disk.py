@@ -3,6 +3,7 @@ import fnmatch
 import plotly.plotly as py
 import plotly.graph_objs as go
 from PIL import Image, ImageTk
+import psutil
 
 import Tkinter
 #from Tkinter import *
@@ -65,9 +66,17 @@ class App:
         lista.append(cont)
         cont = 0
 
+        for i in range(len(lista)):
+            cont=cont+lista[i]
+        total=psutil.virtual_memory().total
+        free=psutil.virtual_memory().free
+
+        free_space=total-free-cont
+        lista.append(free_space)
+        lista.append(free)
         print(lista)
 
-        Labels = ['Archivos', 'Imagenes', 'Videos', 'Musica']
+        Labels = ['Archivos', 'Imagenes', 'Videos', 'Musica','Other','Free']
         fig = {
             'data': [{'labels': Labels,
                       'values': lista,
