@@ -39,12 +39,12 @@ class App:
     def Map_Disk(self):
         lista = []
         cont = 0
-        print("Apps: ")
+        #print("Apps: ")
         cont =self.get_app()
         lista.append(cont)
         cont =0
 
-        print('Archivos: ')
+        #print('Archivos: ')
         mapa = ["*.doc", "*.txt", "*.xml","*.exc", "*.pdf", "*.dochtml", "*.dic", "*.idx", "*.rtf", "*.wri", "*.wtx",
                 "*.log", "*.zip", "*.rar", "*.zoo", "*.tgz", "*.tar", "*.uu", "*.xxe", "*.r0", "*.tbz2", "*.avi",
                 "*.iso", "*.arj", "*.lha", ".*r00", "*.r01"]
@@ -52,21 +52,21 @@ class App:
         lista.append(cont)
         cont = 0
 
-        print("Imagenes: ")
+        #print("Imagenes: ")
         mapa = ["*.png", "*.jpg", "*.jpeg", "*.gif", "*.bmp", "*.dib", "*.tif", "*.bw", "*.cdr", "*.cgm", "*.gih",
                 "*.ico", "*.iff", "*.cpt", "*.mac", "*.pic", "*.pict", "*.pntg", "*.psd", "*.pix", "*.img"]
         cont = self.get_mapa(mapa)
         lista.append(cont)
         cont = 0
 
-        print("Videos: ")
+        #print("Videos: ")
         mapa = ["*.avi", "*.mov", "*.wmv", "*.mng", "*.qt", "*.dvd", "*.movie", "*.mpeg", "*.mpa", "*.mpv2", "*.divx",
                 "*.div", "*.mp2v", "*.bik"]
         cont = self.get_mapa(mapa)
         lista.append(cont)
         cont = 0
 
-        print("Musica: ")
+        #print("Musica: ")
         mapa = ["*.mp3", "*.au", "*.wav", "*.mid", "*.aiff", "*.it"]
         cont = self.get_mapa(mapa)
         lista.append(cont)
@@ -85,6 +85,13 @@ class App:
         other=total-free-cont
         lista.append(other)
         lista.append(free)
+        
+        print("Apps: " + str(lista[0]))
+        print("Archivos: " + str(lista[1]))
+        print("Imagenes: " + str(lista[2]))
+        print("Videos: " + str(lista[3]))
+        print("Musica: " + str(lista[4]))
+        
         print(lista)
 
         Labels = ['Apps','Archivos', 'Imagenes', 'Videos', 'Musica','Other','Free']
