@@ -47,7 +47,7 @@ class App:
         print('Archivos: ')
         mapa = ["*.doc", "*.txt", "*.xml","*.exc", "*.pdf", "*.dochtml", "*.dic", "*.idx", "*.rtf", "*.wri", "*.wtx",
                 "*.log", "*.zip", "*.rar", "*.zoo", "*.tgz", "*.tar", "*.uu", "*.xxe", "*.r0", "*.tbz2", "*.avi",
-                "*.iso", "*.arj", "*.lha", ".*r00", "*.r01"]
+                "*.iso", "*.arj", "*.lha", ".*r00", "*.r01",'*.sh',"*.os",'*.o','*.py']
         cont = self.get_mapa(mapa)
         lista.append(cont)
         cont = 0
@@ -87,7 +87,9 @@ class App:
         lista.append(free)
         print(lista)
 
-        Labels = ['Apps','Archivos', 'Imagenes', 'Videos', 'Musica','Other','Free']
+        Labels = ['Apps('+str(lista[0]/1073741824)+')GB','Archivos('+str(lista[1]/1073741824)+')GB',
+                  'Imagenes'+str(lista[2]/1073741824)+')GB', 'Videos'+str(lista[3]/1073741824)+')GB', 'Musica'+str(lista[4]/1073741824)+')GB',
+                  'Other'+str(lista[5]/1073741824)+')GB','Free'+str(lista[6]/1073741824)+')GB']
         fig = {
             'data': [{'labels': Labels,
                       'values': lista,
