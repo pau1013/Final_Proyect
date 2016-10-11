@@ -9,7 +9,7 @@ import Tkinter
 #from Tkinter import *
 
 
-py.sign_in('pau1013','tnfc99jciz')
+
 
 
 #mapa = []
