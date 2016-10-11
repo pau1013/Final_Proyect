@@ -12,7 +12,7 @@ import Tkinter
 py.sign_in('pau1013','tnfc99jciz')
 
 
-mapa = []
+#mapa = []
 raiz = '/'
 
 
@@ -111,11 +111,10 @@ class App:
     def get_mapa(self,m):
         cont = 0
         for root, dirnames, filenames in os.walk(raiz):
-            for extension in m:
-                for filename in fnmatch.filter(filenames, extension):
-                    try:
-                        cont = cont + os.stat(os.path.join(root, filename)).st_size
-                    except:
+            for filename in fnmatch.filter(filenames, extension):
+                try:
+                    cont = cont + os.stat(os.path.join(root, filename)).st_size
+                except:
                         pass
         return cont
 

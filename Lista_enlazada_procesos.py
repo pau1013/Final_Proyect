@@ -304,10 +304,10 @@ class Lista:
     def disk_usage(self):
         d_usage = list(psutil.disk_usage('/'))
 
-        total = self(d_usage[0])
-        used = self(d_usage[1])
-        free = self(d_usage[2])
-        percent = self(d_usage[3])
+        total = (d_usage[0])
+        used = (d_usage[1])
+        free = (d_usage[2])
+        percent = (d_usage[3])
 
         return total, used, free, percent
 
@@ -336,10 +336,10 @@ Lista=Crear_Lista()
 
 Lista.imprimir()
 
-Lista.Ordenar(True,False,False)
+Lista.Ordenar(False,False,True)
 
 #Lista.remueve(4819)
-#Lista.imprimir()
+Lista.imprimir()
 
 tiempo_final=time()
 
