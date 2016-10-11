@@ -1,22 +1,184 @@
+import sys
 import os
+import fnmatch
+import matplotlib.pyplot as plt
+from PyQt4 import QtGui
+from PyQt4 import QtCore
+from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT as NavigationToolbar
+import random
 import psutil
-from time import time
-from threading import Thread
-from collections import namedtuple
+import threading
+#from threading import Thread
 
-tiempo_inicial=time()
-DiskUsage = namedtuple('DiskUsage', 'total  used  free')
+
+
+
+
+mapa = []
+raiz = '/home'
+
+class VentanaPrincipal(QtGui.QWidget):
+    def __init__(self):
+        super(VentanaPrincipal, self).__init__()
+        self.initUI()
+        self.setup_Map_Disk_Thread()
+
+    def initUI(self):
+        self.setGeometry(600, 400, 750, 500)
+        self.setWindowTitle('Task Manager')
+        self.setFixedSize(750, 500)
+
+        grid = QtGui.QGridLayout()
+        self.setLayout(grid)
+
+        # ------------------------------Tabla de Procesos------------------------------------------
+        data = {'User': Lista.lista_users,
+                'PID': Lista.lista_pids,
+                '%CPU': Lista.lista_cpu,
+                'Memory': Lista.lista_mem,
+                'Nombre de Proceso': Lista.lista_name,}  #Diccionario con los datos de la tabl
+
+        self.table = QtGui.QTableWidget(self) #Se crea la tabla con el numero de filas y columnas
+        self.table.setRowCount(Lista.length())
+        self.table.setColumnCount(5)
+
+        horHeaders = []  # Ingresa los datos a la tabla
+        for n, key in enumerate(sorted(data.keys())):
+            horHeaders.append(key)
+            for m, item in enumerate(data[key]):
+                newitem = QtGui.QTableWidgetItem(item)
+                self.table.setItem(m, n, newitem)
+
+        # Se agregab los headers
+        self.table.setHorizontalHeaderLabels(horHeaders)
+
+        # Tamano de la tabla
+        self.table.resizeColumnsToContents()
+        self.table.resizeRowsToContents()
+        self.table.setFixedSize(400, 300)
+
+        grid.addWidget(self.table, 0, 0)
+
+        self.table.cellClicked.connect(self.seleccionaProceso) #Para seleccionar proceso
+        # ------------------------------Tabla de Procesos------------------------------------------
+
+
+        #------------------------------Botones!------------------------------------------
+        self.btnEliminar = QtGui.QPushButton('Terminar', self)
+        btnGrafProc = QtGui.QPushButton('Proceso', self)
+        btnGrafMem= QtGui.QPushButton('Memoria', self)
+        self.btnMapDisk = QtGui.QPushButton('Map Disk', self)
+
+        self.btnEliminar.setFixedSize(75,75)  #Tamano de botones
+        btnGrafMem.setFixedSize(75,30)
+        btnGrafProc.setFixedSize(75,30)
+        self.btnMapDisk.setFixedSize(155,30)
+
+        self.btnEliminar.move(460,13)
+        btnGrafMem.move(540,280)
+        btnGrafProc.move(460,280)
+        self.btnMapDisk.move(460,245)
+
+        btnGrafMem.clicked.connect(self.graficaMemoria)
+        btnGrafProc.clicked.connect(self.graficaProceso)
+        #btnMapDisk.clicked.connect(Map_Disk)
+
+
+
+        # ------------------------------Botones!------------------------------------------
+
+
+        #Graficas
+        self.figure = plt.figure()
+        self.canvas = FigureCanvas(self.figure)
+        grid.addWidget(self.canvas)
+        #self.toolbar = NavigationToolbar(self.canvas,self)
+
+
+        self.show()
+
+    def graficaMemoria(self):
+        data = [random.random() for i in range(100)]
+        ax = self.figure.add_subplot(111)
+        ax.hold(False)
+        ax.plot(data, 'b.-')
+        self.canvas.draw()
+
+    def graficaProceso(self):
+        data = [random.random() for i in range(100)]
+        ax = self.figure.add_subplot(111)
+        ax.hold(False)
+        ax.plot(data, 'r.-')
+        self.canvas.draw()
+
+    def seleccionaProceso(self, row, column):
+        print("Row %d and Column %d was clicked" % (row, column))
+        pidSelec = self.table.item(row,3).text()
+        print("PID: "+ pidSelec)
+
+
+    # --------------------Boton presionado con thread-----------------------
+    def enableButton(self):
+        self.btnMapDisk.setEnable(True)
+    def done(self):
+        self.btnMapDisk.setEnable(False)
+
+    # --------------------Boton presionado con thread-----------------------
+
+
+    # --------------------Map Disk Button----------------------
+    def setup_Map_Disk_Thread(self):
+        self.thread=QtCore.QThread()
+        self.worker=Map_Disk_worker()
+
+        self.worker.moveToThread(self.thread)
+
+        self.btnMapDisk.clicked.connect(self.worker.Map_Disk)
+        self.worker.wait_for_input.connect(self.enableButton)
+        self.worker.done.connect(self.done)
+
+        self.thread.start()
+    # --------------------Map Disk Button----------------------
+
+# --------------------Map Disk ----------------------
+class Map_Disk_worker(QtCore.QObject):
+    wait_for_input=QtCore.pyqtSignal()
+    done=QtCore.pyqtSignal()
+
+    def Map_Disk(self):
+        lista = []
+        cont = 0
+        mapa = ["*.doc", "*.txt", "*.xml", "*.exc", "*.pdf", "*.dochtml", "*.dic", "*.idx", "*.rtf", "*.wri", "*.wtx",
+                "*.log", "*.zip", "*.rar", "*.zoo", "*.tgz", "*.tar", "*.uu", "*.xxe", "*.r0", "*.tbz2", "*.avi",
+                "*.iso", "*.arj"]
+        for n in mapa:
+            cont = cont + get_mapa(n)
+        lista.append(cont)
+        cont = 0
+        print("Archivos: " + str(lista[0]))
+
+
+
+def get_mapa(m):
+    cont = 0
+    for root, dirnames, filenames in os.walk(raiz):
+        for filename in fnmatch.filter(filenames, m):
+            cont = cont + os.stat(os.path.join(root, filename)).st_size
+    return cont
+
+# --------------------Map Disk ----------------------
+
+# --------------------Map Disk ----------------------
 
 class procs: #proc es un objeto de la clase psutil del cual podemos obtener toda la informacion de un proceso
     def __init__(self,proc):
-        self.proc=proc
+        #self.proc=proc
         self.username=proc.username()
         self.pid=proc.pid
         self.cpu=proc.cpu_percent()
-        self.mem=proc.memory_percent()
+        self.mem=(proc.memory_info().vms)/(1024*1024)
         self.name=proc.name()
-        #self.mem_disk=proc.memory_maps()
-        self.path=proc.exe()
 
         self.next = None
         self.prev=None
@@ -28,6 +190,12 @@ class procs: #proc es un objeto de la clase psutil del cual podemos obtener toda
 class Lista:
     def __init__(self):
         self.head=None
+        self.lista_users=[]
+        self.lista_cpu=[]
+        self.lista_pids=[]
+        self.lista_name=[]
+        self.lista_mem=[]
+
 
 
     def insertar(self,proc,Posicion): # agregaa un proc a la lista, eventualmente lo necesitaremos para actualizar
@@ -63,6 +231,7 @@ class Lista:
             temp = self.Quicksort_interno_CPU(self.Lista_desordenada())
         elif MEM==True:
             temp = self.Quicksort_interno_MEM(self.Lista_desordenada())
+
 
         self.head=temp[0]
         self.head.prev=None
@@ -242,15 +411,27 @@ class Lista:
 
     def imprimir(self): #Imprime los cambios, (lo necesitamos cambiar para que funcione en el GUI)
         temp=self.head
+        self.lista_users = []
+        self.lista_pids = []
+        self.lista_cpu= []
+        self.lista_mem = []
+        self.lista_name = []
+        cont=0
         string=""
         if temp!= None:
             while temp is not None:
                 string=string + "USER: {0} PID: {1} CPU: {2} MEM: {3} NAME: {4}\n".format(str(temp.username),str(temp.pid),str(temp.cpu),str(temp.mem),str(temp.name))
+                self.lista_users.append(str(temp.username))
+                self.lista_pids.append(str(temp.pid))
+                self.lista_cpu.append(str(temp.cpu))
+                self.lista_mem.append(str(temp.mem))
+                self.lista_name.append(str(temp.name))
                 temp=temp.next
+
             print(string)
 
 
-    def agregar(self,proceso): #agrega un proc a la lista, solo se hace en la creacion
+    def agregar(self,proceso): #agrega un proc a la lista
         proc = procs(proceso)
         if self.head == None:
             proc.posicion=0
@@ -294,35 +475,37 @@ class Lista:
         return None
 
     def Salvar(self): #Salva los resultados de cada proceso
-        cont = 1
-        archiv = open('Task_Manager_Stats_%s.txt' % cont, 'a')
-        statsinfo = os.stat('Task_Manager_Stats_%s.txt' % cont)
-        while statsinfo.st_size/1024 > 500:
-            cont = cont +1
-            statsinfo = os.stat('Task_Manager_Stats_%s.txt' % cont)
-        archi = open('Task_Manager_Stats_%s.txt' % cont, 'a')
+        archi=open("Task Manager Stats", "w")
         proc_temp=self.head
         while proc_temp!=None:
             archi.write("USER: {0} PID: {1} CPU: {2} MEM: {3} NAME: {4}\n".format
             (str(proc_temp.username),str(proc_temp.pid),str(proc_temp.cpu),str(proc_temp.mem),str(proc_temp.name)))
             proc_temp=proc_temp.next
 
+    def Actualizar(self):# Actualiza la lista con los nuevos resultados
+        for proc in psutil.process_iter():
+            nodo_temp=self.head
+            match=False
+            for n in range(Lista.length()):
+                if nodo_temp.name is proc.name():
+                    match=True
+                    nodo_temp.cpu=proc.cpu_percent()
+                    nodo_temp.mem=(proc.memory_info().vms)/(1024*1024)
+                nodo_temp=nodo_temp.next
+            if match==False:
+                self.agregar(proc)
+        self.Ordenar(False,False,True)
 
-    def disk_usage(self):
-        d_usage = list(psutil.disk_usage('/'))
 
-        total = (d_usage[0])
-        used = (d_usage[1])
-        free = (d_usage[2])
-        percent = (d_usage[3])
 
-        return total, used, free, percent
+
+
 
 def Crear_Lista(): #Regresa una lista con todos los procesos actuales
     List=Lista()
     thread_procesos=[]
     for proc in psutil.process_iter():
-        thread=Thread(target=List.agregar,args=(proc,))
+        thread=threading.Thread(target=List.agregar,args=(proc,))
         thread.setDaemon(True)
         thread.start()
         thread_procesos.append(thread)
@@ -337,17 +520,18 @@ def Crear_Lista(): #Regresa una lista con todos los procesos actuales
 
 
 
-Lista=Crear_Lista()
+def main():
+    app = QtGui.QApplication(sys.argv)
+    w = VentanaPrincipal()
+    app.exec_()
 
 
 
-Lista.imprimir()
+if __name__ == '__main__':
+    Lista = Crear_Lista()
+    Lista.Ordenar(True,False,False)
+    Lista.imprimir()
+    lockthread=threading.Lock()
 
-Lista.Ordenar(False,False,True)
+    main()
 
-#Lista.remueve(4819)
-Lista.imprimir()
-
-tiempo_final=time()
-
-print tiempo_final-tiempo_inicial

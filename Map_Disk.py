@@ -9,10 +9,10 @@ import Tkinter
 #from Tkinter import *
 
 
-py.sign_in('pau1013','tnfc99jciz')
 
 
-mapa = []
+
+#mapa = []
 raiz = '/'
 
 
@@ -47,7 +47,7 @@ class App:
         #print('Archivos: ')
         mapa = ["*.doc", "*.txt", "*.xml","*.exc", "*.pdf", "*.dochtml", "*.dic", "*.idx", "*.rtf", "*.wri", "*.wtx",
                 "*.log", "*.zip", "*.rar", "*.zoo", "*.tgz", "*.tar", "*.uu", "*.xxe", "*.r0", "*.tbz2", "*.avi",
-                "*.iso", "*.arj", "*.lha", ".*r00", "*.r01"]
+                "*.iso", "*.arj", "*.lha", ".*r00", "*.r01",'*.sh',"*.os",'*.o','*.py']
         cont = self.get_mapa(mapa)
         lista.append(cont)
         cont = 0
@@ -94,7 +94,9 @@ class App:
         
         print(lista)
 
-        Labels = ['Apps','Archivos', 'Imagenes', 'Videos', 'Musica','Other','Free']
+        Labels = ['Apps('+str(lista[0]/1073741824)+')GB','Archivos('+str(lista[1]/1073741824)+')GB',
+                  'Imagenes'+str(lista[2]/1073741824)+')GB', 'Videos'+str(lista[3]/1073741824)+')GB', 'Musica'+str(lista[4]/1073741824)+')GB',
+                  'Other'+str(lista[5]/1073741824)+')GB','Free'+str(lista[6]/1073741824)+')GB']
         fig = {
             'data': [{'labels': Labels,
                       'values': lista,
@@ -109,11 +111,10 @@ class App:
     def get_mapa(self,m):
         cont = 0
         for root, dirnames, filenames in os.walk(raiz):
-            for extension in m:
-                for filename in fnmatch.filter(filenames, extension):
-                    try:
-                        cont = cont + os.stat(os.path.join(root, filename)).st_size
-                    except:
+            for filename in fnmatch.filter(filenames, extension):
+                try:
+                    cont = cont + os.stat(os.path.join(root, filename)).st_size
+                except:
                         pass
         return cont
 
