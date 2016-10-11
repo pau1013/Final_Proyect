@@ -16,7 +16,7 @@ class procs: #proc es un objeto de la clase psutil del cual podemos obtener toda
         self.mem=proc.memory_percent()
         self.name=proc.name()
         #self.mem_disk=proc.memory_maps()
-        #self.path=proc.PROCFS_PATH
+        self.path=proc.exe()
 
         self.next = None
         self.prev=None
@@ -294,12 +294,19 @@ class Lista:
         return None
 
     def Salvar(self): #Salva los resultados de cada proceso
-        archi=open("Task Manager Stats", "w")
+        cont = 1
+        archiv = open('Task_Manager_Stats_%s.txt' % cont, 'a')
+        statsinfo = os.stat('Task_Manager_Stats_%s.txt' % cont)
+        while statsinfo.st_size/1024 > 500:
+            cont = cont +1
+            statsinfo = os.stat('Task_Manager_Stats_%s.txt' % cont)
+        archi = open('Task_Manager_Stats_%s.txt' % cont, 'a')
         proc_temp=self.head
         while proc_temp!=None:
             archi.write("USER: {0} PID: {1} CPU: {2} MEM: {3} NAME: {4}\n".format
             (str(proc_temp.username),str(proc_temp.pid),str(proc_temp.cpu),str(proc_temp.mem),str(proc_temp.name)))
             proc_temp=proc_temp.next
+
 
     def disk_usage(self):
         d_usage = list(psutil.disk_usage('/'))
