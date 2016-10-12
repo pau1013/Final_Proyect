@@ -301,6 +301,7 @@ class Lista:
             cont = cont +1
             statsinfo = os.stat('Task_Manager_Stats_%s.txt' % cont)
         archi = open('Task_Manager_Stats_%s.txt' % cont, 'a')
+
         proc_temp=self.head
         while proc_temp!=None:
             archi.write("USER: {0} PID: {1} CPU: {2} MEM: {3} NAME: {4}\n".format

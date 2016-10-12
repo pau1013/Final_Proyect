@@ -10,6 +10,8 @@ import random
 import psutil
 import threading
 #from threading import Thread
+import time
+import datetime
 
 
 
@@ -23,6 +25,8 @@ class VentanaPrincipal(QtGui.QWidget):
         super(VentanaPrincipal, self).__init__()
         self.initUI()
         self.setup_Map_Disk_Thread()
+        self.setup_Save_Thread=Background_Save_Thread()
+        self.setup_Save_Thread.start()
 
     def initUI(self):
         self.setGeometry(600, 400, 750, 500)
@@ -127,18 +131,29 @@ class VentanaPrincipal(QtGui.QWidget):
     # --------------------Boton presionado con thread-----------------------
 
 
+    # ---------------------Background Save Thread ----------------------
+    def setup_Save_Thread(self):
+        #self.thread_Save=QtCore.QThread()
+        self.thread_Save=Background_Save_Thread()
+        #self.worker_Save=Background_Save_Worker()
+        #self.worker_Save.moveToThread(self.thread_Save)
+
+        self.thread_Save.start()
+
+    # ---------------------Background Save Thread ----------------------
+
     # --------------------Map Disk Button----------------------
     def setup_Map_Disk_Thread(self):
-        self.thread=QtCore.QThread()
-        self.worker=Map_Disk_worker()
+        self.thread_MapDisk=QtCore.QThread()
+        self.worker_MapDisk=Map_Disk_worker()
 
-        self.worker.moveToThread(self.thread)
+        self.worker_MapDisk.moveToThread(self.thread_MapDisk)
 
-        self.btnMapDisk.clicked.connect(self.worker.Map_Disk)
-        self.worker.wait_for_input.connect(self.enableButton)
-        self.worker.done.connect(self.done)
+        self.btnMapDisk.clicked.connect(self.worker_MapDisk.Map_Disk)
+        self.worker_MapDisk.wait_for_input.connect(self.enableButton)
+        self.worker_MapDisk.done.connect(self.done)
 
-        self.thread.start()
+        self.thread_MapDisk.start()
     # --------------------Map Disk Button----------------------
 
 # --------------------Map Disk ----------------------
@@ -171,6 +186,28 @@ def get_mapa(m):
 
 # --------------------Map Disk ----------------------
 
+# ---------------------Background Save Thread ----------------------
+
+class Background_Save_Thread(QtCore.QThread):
+
+    def __init__(self,parent=None):
+        super(Background_Save_Thread,self).__init__(parent)
+
+    def run (self):
+        while True:
+            time.sleep(3)
+            print 'saving'
+            Lista.Actualizar()
+            Lista.Salvar()
+            print 'done'
+            time.sleep(3)
+
+
+# ---------------------Background Save Thread ----------------------
+
+
+
+
 class procs: #proc es un objeto de la clase psutil del cual podemos obtener toda la informacion de un proceso
     def __init__(self,proc):
         #self.proc=proc
@@ -186,7 +223,6 @@ class procs: #proc es un objeto de la clase psutil del cual podemos obtener toda
 
 
 
-
 class Lista:
     def __init__(self):
         self.head=None
@@ -195,32 +231,10 @@ class Lista:
         self.lista_pids=[]
         self.lista_name=[]
         self.lista_mem=[]
+        self.lock=threading.Lock
 
 
 
-    def insertar(self,proc,Posicion): # agregaa un proc a la lista, eventualmente lo necesitaremos para actualizar
-        temp=self.head
-        cont=0
-        nodo=procs(proc)
-
-
-        if Posicion <= self.length() and Posicion != 0:
-            if temp!=None:
-                while cont!=Posicion-1:
-                    temp=temp.next
-                    cont=cont+1
-            nodo.next=temp.next
-            nodo.posicion=temp.next.posicion-1
-            temp.next=nodo
-
-        elif Posicion==0:
-            nodo.next=self.head
-            nodo.end=None
-            self.head=nodo
-        if Posicion <= self.length() and nodo.next != None:
-            while nodo != None:
-                nodo.posicion = nodo.posicion + 1
-                nodo = nodo.next
 
 
 
@@ -475,30 +489,39 @@ class Lista:
         return None
 
     def Salvar(self): #Salva los resultados de cada proceso
-        archi=open("Task Manager Stats", "w")
-        proc_temp=self.head
-        while proc_temp!=None:
+        cont = 1
+        archiv = open('Task_Manager_Stats_%s.txt' % cont, 'a')
+        statsinfo = os.stat('Task_Manager_Stats_%s.txt' % cont)
+        while statsinfo.st_size / (1024*1024) > 100:
+            cont = cont + 1
+            statsinfo = os.stat('Task_Manager_Stats_%s.txt' % cont)
+        archi = open('Task_Manager_Stats_%s.txt' % cont, 'a')
+        date=datetime.datetime.now()
+        print date.strftime("%Y-%m-%d %H:%M")
+        archi.write(str(date.strftime("%Y-%m-%d %H:%M"))+"\n")
+        proc_temp = self.head
+        while proc_temp != None:
             archi.write("USER: {0} PID: {1} CPU: {2} MEM: {3} NAME: {4}\n".format
-            (str(proc_temp.username),str(proc_temp.pid),str(proc_temp.cpu),str(proc_temp.mem),str(proc_temp.name)))
-            proc_temp=proc_temp.next
+                        (str(proc_temp.username), str(proc_temp.pid), str(proc_temp.cpu), str(proc_temp.mem),
+                         str(proc_temp.name)))
+            proc_temp = proc_temp.next
+        archi.write('\n')
+
+        archi.close()
 
     def Actualizar(self):# Actualiza la lista con los nuevos resultados
         for proc in psutil.process_iter():
             nodo_temp=self.head
             match=False
             for n in range(Lista.length()):
-                if nodo_temp.name is proc.name():
+                if nodo_temp.name == proc.name():
                     match=True
                     nodo_temp.cpu=proc.cpu_percent()
                     nodo_temp.mem=(proc.memory_info().vms)/(1024*1024)
                 nodo_temp=nodo_temp.next
             if match==False:
                 self.agregar(proc)
-        self.Ordenar(False,False,True)
-
-
-
-
+        self.Ordenar(True,False,False)
 
 
 def Crear_Lista(): #Regresa una lista con todos los procesos actuales
@@ -516,10 +539,6 @@ def Crear_Lista(): #Regresa una lista con todos los procesos actuales
     return List
 
 
-
-
-
-
 def main():
     app = QtGui.QApplication(sys.argv)
     w = VentanaPrincipal()
@@ -531,7 +550,7 @@ if __name__ == '__main__':
     Lista = Crear_Lista()
     Lista.Ordenar(True,False,False)
     Lista.imprimir()
-    lockthread=threading.Lock()
+
 
     main()
 
