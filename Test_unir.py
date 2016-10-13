@@ -25,8 +25,10 @@ class VentanaPrincipal(QtGui.QWidget):
         super(VentanaPrincipal, self).__init__()
         self.initUI()
         self.setup_Map_Disk_Thread()
-        self.setup_Save_Thread=Background_Save_Thread()
-        self.setup_Save_Thread.start()
+        #self.setup_Save_Thread=Background_Save_Thread()
+        #self.setup_Save_Thread.start()
+        self.setup_Update_Thread=Background_Update_Thread()
+        self.setup_Update_Thread.start()
 
     def initUI(self):
         self.setGeometry(600, 400, 750, 500)
@@ -156,6 +158,9 @@ class VentanaPrincipal(QtGui.QWidget):
         self.thread_MapDisk.start()
     # --------------------Map Disk Button----------------------
 
+
+
+
 # --------------------Map Disk ----------------------
 class Map_Disk_worker(QtCore.QObject):
     wait_for_input=QtCore.pyqtSignal()
@@ -197,7 +202,6 @@ class Background_Save_Thread(QtCore.QThread):
         while True:
             time.sleep(3)
             print 'saving'
-            Lista.Actualizar()
             Lista.Salvar()
             print 'done'
             time.sleep(3)
@@ -205,6 +209,24 @@ class Background_Save_Thread(QtCore.QThread):
 
 # ---------------------Background Save Thread ----------------------
 
+# ---------------------Background Update Thread ----------------------
+
+class Background_Update_Thread(QtCore.QThread):
+
+    def __init__(self,parent=None):
+        super(Background_Update_Thread,self).__init__(parent)
+
+    def run (self):
+        while True:
+            time.sleep(4)
+            Lista.Vaciar()
+            for proc in psutil.process_iter():
+                Lista.agregar(proc)
+            Lista.Ordenar(Lista.PID,Lista.CPU,Lista.MEM)
+            Lista.imprimir()
+
+
+# ---------------------Background Update Thread ----------------------
 
 
 
@@ -231,14 +253,22 @@ class Lista:
         self.lista_pids=[]
         self.lista_name=[]
         self.lista_mem=[]
-        self.lock=threading.Lock
+
+        self.CPU=False
+        self.MEM=False
+        self.PID=False
 
 
-
-
-
+    def Vaciar(self):
+        self.head = None
+        self.lista_users = []
+        self.lista_cpu = []
+        self.lista_pids = []
+        self.lista_name = []
+        self.lista_mem = []
 
     def Ordenar(self,PID,CPU,MEM): #Ordena la lista de menor a mayor de acuerdo a su pid,cpu,mem recibe boolean ejem(True,False,False)
+
         if PID==True:
             temp = self.Quicksort_interno_PID(self.Lista_desordenada())
         elif CPU==True:
@@ -514,10 +544,13 @@ class Lista:
             nodo_temp=self.head
             match=False
             for n in range(Lista.length()):
-                if nodo_temp.name == proc.name():
-                    match=True
-                    nodo_temp.cpu=proc.cpu_percent()
-                    nodo_temp.mem=(proc.memory_info().vms)/(1024*1024)
+                try:
+                    if nodo_temp.name == proc.name():
+                        match=True
+                        nodo_temp.cpu=proc.cpu_percent()
+                        nodo_temp.mem=(proc.memory_info().vms)/(1024*1024)
+                except:
+                    pass
                 nodo_temp=nodo_temp.next
             if match==False:
                 self.agregar(proc)
@@ -548,7 +581,8 @@ def main():
 
 if __name__ == '__main__':
     Lista = Crear_Lista()
-    Lista.Ordenar(True,False,False)
+    Lista.PID=True
+    Lista.Ordenar(Lista.PID,Lista.CPU,Lista.MEM)
     Lista.imprimir()
 
 
