@@ -105,6 +105,7 @@ class App:
         }
         py.image.save_as(fig, 'Map_Disk.png')
         img=ImageTk.PhotoImage(Image.open('Map_Disk.png'))
+
         self.panel.configure(image=img)
         self.image=img
 
@@ -113,7 +114,7 @@ class App:
         for root, dirnames, filenames in os.walk(raiz):
             for filename in fnmatch.filter(filenames, extension):
                 try:
-                    cont = cont + os.stat(os.path.join(root, filename)).st_size
+                        cont = cont + os.stat(os.path.join(root, filename)).st_size
                 except:
                         pass
         return cont
