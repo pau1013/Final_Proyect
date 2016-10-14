@@ -7,12 +7,12 @@ import psutil
 
 import Tkinter
 #from Tkinter import *
+py.sign_in('pau1_1013', '6jnl8o6nbd')
 
 
 
 
-
-#mapa = []
+mapa = []
 raiz = '/'
 
 
@@ -105,18 +105,18 @@ class App:
         }
         py.image.save_as(fig, 'Map_Disk.png')
         img=ImageTk.PhotoImage(Image.open('Map_Disk.png'))
-
         self.panel.configure(image=img)
         self.image=img
 
     def get_mapa(self,m):
         cont = 0
         for root, dirnames, filenames in os.walk(raiz):
-            for filename in fnmatch.filter(filenames, extension):
-                try:
-                        cont = cont + os.stat(os.path.join(root, filename)).st_size
-                except:
-                        pass
+           for extension in m:
+               for filename in fnmatch.filter(filenames, extension):
+                   try:
+                        cont = cont + os.stat(os.path.join(root,filename)).st_size
+                   except:
+                       pass
         return cont
 
     def get_app(self):
