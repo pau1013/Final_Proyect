@@ -7,7 +7,7 @@ import psutil
 
 import Tkinter
 #from Tkinter import *
-py.sign_in('pau1_1013', '6jnl8o6nbd')
+
 
 
 
