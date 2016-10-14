@@ -33,7 +33,7 @@ class VentanaPrincipal(QtGui.QWidget):
     def initUI(self):
         self.setGeometry(600, 400, 750, 500)
         self.setWindowTitle('Task Manager')
-        self.setFixedSize(750, 500)
+        self.setFixedSize(900, 500)
 
         grid = QtGui.QGridLayout()
         self.setLayout(grid)
@@ -62,7 +62,7 @@ class VentanaPrincipal(QtGui.QWidget):
         # Tamano de la tabla
         self.table.resizeColumnsToContents()
         self.table.resizeRowsToContents()
-        self.table.setFixedSize(400, 300)
+        self.table.setFixedSize(575, 250)
 
         grid.addWidget(self.table, 0, 0)
 
@@ -74,17 +74,20 @@ class VentanaPrincipal(QtGui.QWidget):
         self.btnEliminar = QtGui.QPushButton('Terminar', self)
         btnGrafProc = QtGui.QPushButton('Proceso', self)
         btnGrafMem= QtGui.QPushButton('Memoria', self)
+        btnOrden = QtGui.QPushButton('Ordenar', self)
         self.btnMapDisk = QtGui.QPushButton('Map Disk', self)
 
-        self.btnEliminar.setFixedSize(75,75)  #Tamano de botones
-        btnGrafMem.setFixedSize(75,30)
-        btnGrafProc.setFixedSize(75,30)
-        self.btnMapDisk.setFixedSize(155,30)
+        self.btnEliminar.setFixedSize(155,75)  #Tamano de botones
+        btnOrden.setFixedSize(115, 75)
+        btnGrafMem.setFixedSize(155,37.5)
+        btnGrafProc.setFixedSize(155,37.5)
+        self.btnMapDisk.setFixedSize(155,75)
 
-        self.btnEliminar.move(460,13)
-        btnGrafMem.move(540,280)
-        btnGrafProc.move(460,280)
-        self.btnMapDisk.move(460,245)
+        self.btnEliminar.move(115,315)
+        btnOrden.move(0,315)
+        btnGrafMem.move(425,315)
+        btnGrafProc.move(425,352.5)
+        self.btnMapDisk.move(270,315)
 
         btnGrafMem.clicked.connect(self.graficaMemoria)
         btnGrafProc.clicked.connect(self.graficaProceso)
@@ -98,7 +101,9 @@ class VentanaPrincipal(QtGui.QWidget):
         #Graficas
         self.figure = plt.figure()
         self.canvas = FigureCanvas(self.figure)
-        grid.addWidget(self.canvas)
+        self.canvas2 = FigureCanvas(self.figure)
+        grid.addWidget(self.canvas, 0, 1)
+        grid.addWidget(self.canvas2, 1, 1)
         #self.toolbar = NavigationToolbar(self.canvas,self)
 
 
@@ -116,7 +121,7 @@ class VentanaPrincipal(QtGui.QWidget):
         ax = self.figure.add_subplot(111)
         ax.hold(False)
         ax.plot(data, 'r.-')
-        self.canvas.draw()
+        self.canvas2.draw()
 
     def seleccionaProceso(self, row, column):
         print("Row %d and Column %d was clicked" % (row, column))
@@ -584,7 +589,6 @@ if __name__ == '__main__':
     Lista.PID=True
     Lista.Ordenar(Lista.PID,Lista.CPU,Lista.MEM)
     Lista.imprimir()
-
 
     main()
 
