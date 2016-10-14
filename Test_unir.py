@@ -27,6 +27,10 @@ class VentanaPrincipal(QtGui.QWidget):
         self.setup_Map_Disk_Thread()
         self.setup_Save_Thread=Background_Save_Thread()
         self.setup_Save_Thread.start()
+        #########################################################
+        self.setup_Update_CPU_data = Background_Update_CPU_Graph()
+        self.setup_Update_CPU_data.start()
+        self.connect(self.setup_Update_CPU_data, QtCore.SIGNAL('CPU_Data'), self.graficaProceso)  # cambiar nombre de senal ####
 
     def initUI(self):
         self.setGeometry(600, 400, 750, 500)
@@ -51,7 +55,7 @@ class VentanaPrincipal(QtGui.QWidget):
         for n, key in enumerate(sorted(data.keys())):
             horHeaders.append(key)
             for m, item in enumerate(data[key]):
-                newitem = QtGui.QTableWidgetItem(item)
+                newitem = QtGui.QTableWidgetItem(item)  ########how does this work tho? ask sam
                 self.table.setItem(m, n, newitem)
 
         # Se agregab los headers
@@ -70,23 +74,23 @@ class VentanaPrincipal(QtGui.QWidget):
 
         #------------------------------Botones!------------------------------------------
         self.btnEliminar = QtGui.QPushButton('Terminar', self)
-        btnGrafProc = QtGui.QPushButton('Proceso', self)
+        btnGrafCPU = QtGui.QPushButton('CPU', self)            #############cambie de proc a cpu
         btnGrafMem= QtGui.QPushButton('Memoria', self)
         self.btnMapDisk = QtGui.QPushButton('Map Disk', self)
 
         self.btnEliminar.setFixedSize(75,75)  #Tamano de botones
         btnGrafMem.setFixedSize(75,30)
-        btnGrafProc.setFixedSize(75,30)
+        btnGrafCPU.setFixedSize(75,30)
         self.btnMapDisk.setFixedSize(155,30)
 
         self.btnEliminar.move(460,13)
         btnGrafMem.move(540,280)
-        btnGrafProc.move(460,280)
+        btnGrafCPU.move(460,280)
         self.btnMapDisk.move(460,245)
 
         btnGrafMem.clicked.connect(self.graficaMemoria)
-        btnGrafProc.clicked.connect(self.graficaProceso)
-        #btnMapDisk.clicked.connect(Map_Disk)
+        btnGrafCPU.clicked.connect(self.graficaProceso)
+        #btnMapDisk.clicked.connect(Map_Disk)     #################falta esto , boton Eliminar hace algo?
 
 
 
@@ -97,20 +101,18 @@ class VentanaPrincipal(QtGui.QWidget):
         self.figure = plt.figure()
         self.canvas = FigureCanvas(self.figure)
         grid.addWidget(self.canvas)
-        #self.toolbar = NavigationToolbar(self.canvas,self)
+        #self.toolbar = NavigationToolbar(self.canvas,self)        ################esto que zoom and shit
 
 
         self.show()
 
-    def graficaMemoria(self):
-        data = [random.random() for i in range(100)]
+    def graficaMemoria(self, data):
         ax = self.figure.add_subplot(111)
         ax.hold(False)
         ax.plot(data, 'b.-')
         self.canvas.draw()
 
-    def graficaProceso(self):
-        data = [random.random() for i in range(100)]
+    def graficaProceso(self, data):
         ax = self.figure.add_subplot(111)
         ax.hold(False)
         ax.plot(data, 'r.-')
@@ -205,8 +207,54 @@ class Background_Save_Thread(QtCore.QThread):
 
 # ---------------------Background Save Thread ----------------------
 
+# ---------------------Background Update Thread ----------------------
+
+class Background_Update_Thread(QtCore.QThread):
+
+    def __init__(self,parent=None):
+        super(Background_Update_Thread,self).__init__(parent)
+
+    def run (self):
+        while True:
+            time.sleep(4)
+            Lista.Vaciar()
+            for proc in psutil.process_iter():
+                Lista.agregar(proc)
+            Lista.Ordenar(Lista.PID,Lista.CPU,Lista.MEM) #whats up
+            Lista.imprimir()
+
+# --------------------- Background_Update_CPU_Graph ----------------------
+
+class Background_Update_CPU_Graph(QtCore.QThread):
+
+    def __init__(self, parent=None):
+        super(Background_Update_CPU_Graph,self).__init__(parent)
+
+    def run(self):
+        while True:
+            #time.sleep(1)
+            data = []
+            for i in range(0, 8):
+                data.append(psutil.cpu_percent(interval = 0.10, percpu= False))
+            self.emit(QtCore.SIGNAL('CPU_Data'), data)
 
 
+# --------------------- Background_Update_CPU_Graph ----------------------
+class Background_Update_MEM_Graph(QtCore.QThread):
+
+    def __init__(self, parent=None):
+        super(Background_Update_MEM_Graph,self).__init__(parent)
+
+    def run(self):
+        while True:
+            time.sleep(1)
+            data = []
+            for i in range(0, 8):
+                mem_percent = float(psutil.used_phymem()) / self.max_mem * 100
+                data.append(mem_percent)
+            self.emit(QtCore.SIGNAL('CPU_Data'), data)
+
+###########################################################################################################
 
 class procs: #proc es un objeto de la clase psutil del cual podemos obtener toda la informacion de un proceso
     def __init__(self,proc):
@@ -232,11 +280,6 @@ class Lista:
         self.lista_name=[]
         self.lista_mem=[]
         self.lock=threading.Lock
-
-
-
-
-
 
     def Ordenar(self,PID,CPU,MEM): #Ordena la lista de menor a mayor de acuerdo a su pid,cpu,mem recibe boolean ejem(True,False,False)
         if PID==True:
@@ -490,12 +533,13 @@ class Lista:
 
     def Salvar(self): #Salva los resultados de cada proceso
         cont = 1
-        archiv = open('Task_Manager_Stats_%s.txt' % cont, 'a')
-        statsinfo = os.stat('Task_Manager_Stats_%s.txt' % cont)
-        while statsinfo.st_size / (1024*1024) > 100:
-            cont = cont + 1
-            statsinfo = os.stat('Task_Manager_Stats_%s.txt' % cont)
         archi = open('Task_Manager_Stats_%s.txt' % cont, 'a')
+        statsinfo = os.stat('Task_Manager_Stats_%s.txt' % cont)
+        while (statsinfo.st_size / (1024*1024)) > 100:
+            cont = cont + 1
+            archi = open('Task_Manager_Stats_%s.txt' % cont, 'a')
+            statsinfo = os.stat('Task_Manager_Stats_%s.txt' % cont)
+
         date=datetime.datetime.now()
         print date.strftime("%Y-%m-%d %H:%M")
         archi.write(str(date.strftime("%Y-%m-%d %H:%M"))+"\n")
