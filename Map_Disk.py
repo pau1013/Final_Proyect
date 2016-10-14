@@ -12,7 +12,7 @@ import Tkinter
 
 
 
-#mapa = []
+mapa = []
 raiz = '/'
 
 
@@ -111,11 +111,12 @@ class App:
     def get_mapa(self,m):
         cont = 0
         for root, dirnames, filenames in os.walk(raiz):
-            for filename in fnmatch.filter(filenames, extension):
-                try:
-                    cont = cont + os.stat(os.path.join(root, filename)).st_size
-                except:
-                        pass
+           for extension in m:
+               for filename in fnmatch.filter(filenames, extension):
+                   try:
+                        cont = cont + os.stat(os.path.join(root,filename)).st_size
+                   except:
+                       pass
         return cont
 
     def get_app(self):

@@ -25,17 +25,24 @@ class VentanaPrincipal(QtGui.QWidget):
         super(VentanaPrincipal, self).__init__()
         self.initUI()
         self.setup_Map_Disk_Thread()
+<<<<<<< HEAD
         self.setup_Save_Thread=Background_Save_Thread()
         self.setup_Save_Thread.start()
         #########################################################
         self.setup_Update_CPU_data = Background_Update_CPU_Graph()
         self.setup_Update_CPU_data.start()
         self.connect(self.setup_Update_CPU_data, QtCore.SIGNAL('CPU_Data'), self.graficaProceso)  # cambiar nombre de senal ####
+=======
+        #self.setup_Save_Thread=Background_Save_Thread()
+        #self.setup_Save_Thread.start()
+        self.setup_Update_Thread=Background_Update_Thread()
+        self.setup_Update_Thread.start()
+>>>>>>> 3f815972a427b320a75a74f1019a95273ffbf6e2
 
     def initUI(self):
         self.setGeometry(600, 400, 750, 500)
         self.setWindowTitle('Task Manager')
-        self.setFixedSize(750, 500)
+        self.setFixedSize(900, 500)
 
         grid = QtGui.QGridLayout()
         self.setLayout(grid)
@@ -64,7 +71,7 @@ class VentanaPrincipal(QtGui.QWidget):
         # Tamano de la tabla
         self.table.resizeColumnsToContents()
         self.table.resizeRowsToContents()
-        self.table.setFixedSize(400, 300)
+        self.table.setFixedSize(575, 250)
 
         grid.addWidget(self.table, 0, 0)
 
@@ -76,8 +83,10 @@ class VentanaPrincipal(QtGui.QWidget):
         self.btnEliminar = QtGui.QPushButton('Terminar', self)
         btnGrafCPU = QtGui.QPushButton('CPU', self)            #############cambie de proc a cpu
         btnGrafMem= QtGui.QPushButton('Memoria', self)
+        btnOrden = QtGui.QPushButton('Ordenar', self)
         self.btnMapDisk = QtGui.QPushButton('Map Disk', self)
 
+<<<<<<< HEAD
         self.btnEliminar.setFixedSize(75,75)  #Tamano de botones
         btnGrafMem.setFixedSize(75,30)
         btnGrafCPU.setFixedSize(75,30)
@@ -87,6 +96,19 @@ class VentanaPrincipal(QtGui.QWidget):
         btnGrafMem.move(540,280)
         btnGrafCPU.move(460,280)
         self.btnMapDisk.move(460,245)
+=======
+        self.btnEliminar.setFixedSize(155,75)  #Tamano de botones
+        btnOrden.setFixedSize(115, 75)
+        btnGrafMem.setFixedSize(155,37.5)
+        btnGrafProc.setFixedSize(155,37.5)
+        self.btnMapDisk.setFixedSize(155,75)
+
+        self.btnEliminar.move(115,315)
+        btnOrden.move(0,315)
+        btnGrafMem.move(425,315)
+        btnGrafProc.move(425,352.5)
+        self.btnMapDisk.move(270,315)
+>>>>>>> 3f815972a427b320a75a74f1019a95273ffbf6e2
 
         btnGrafMem.clicked.connect(self.graficaMemoria)
         btnGrafCPU.clicked.connect(self.graficaProceso)
@@ -100,8 +122,15 @@ class VentanaPrincipal(QtGui.QWidget):
         #Graficas
         self.figure = plt.figure()
         self.canvas = FigureCanvas(self.figure)
+<<<<<<< HEAD
         grid.addWidget(self.canvas)
         #self.toolbar = NavigationToolbar(self.canvas,self)        ################esto que zoom and shit
+=======
+        self.canvas2 = FigureCanvas(self.figure)
+        grid.addWidget(self.canvas, 0, 1)
+        grid.addWidget(self.canvas2, 1, 1)
+        #self.toolbar = NavigationToolbar(self.canvas,self)
+>>>>>>> 3f815972a427b320a75a74f1019a95273ffbf6e2
 
 
         self.show()
@@ -116,7 +145,7 @@ class VentanaPrincipal(QtGui.QWidget):
         ax = self.figure.add_subplot(111)
         ax.hold(False)
         ax.plot(data, 'r.-')
-        self.canvas.draw()
+        self.canvas2.draw()
 
     def seleccionaProceso(self, row, column):
         print("Row %d and Column %d was clicked" % (row, column))
@@ -157,6 +186,9 @@ class VentanaPrincipal(QtGui.QWidget):
 
         self.thread_MapDisk.start()
     # --------------------Map Disk Button----------------------
+
+
+
 
 # --------------------Map Disk ----------------------
 class Map_Disk_worker(QtCore.QObject):
@@ -199,7 +231,6 @@ class Background_Save_Thread(QtCore.QThread):
         while True:
             time.sleep(3)
             print 'saving'
-            Lista.Actualizar()
             Lista.Salvar()
             print 'done'
             time.sleep(3)
@@ -208,6 +239,26 @@ class Background_Save_Thread(QtCore.QThread):
 # ---------------------Background Save Thread ----------------------
 
 # ---------------------Background Update Thread ----------------------
+<<<<<<< HEAD
+=======
+
+class Background_Update_Thread(QtCore.QThread):
+
+    def __init__(self,parent=None):
+        super(Background_Update_Thread,self).__init__(parent)
+
+    def run (self):
+        while True:
+            time.sleep(4)
+            Lista.Vaciar()
+            for proc in psutil.process_iter():
+                Lista.agregar(proc)
+            Lista.Ordenar(Lista.PID,Lista.CPU,Lista.MEM)
+            Lista.imprimir()
+
+
+# ---------------------Background Update Thread ----------------------
+>>>>>>> 3f815972a427b320a75a74f1019a95273ffbf6e2
 
 class Background_Update_Thread(QtCore.QThread):
 
@@ -279,9 +330,26 @@ class Lista:
         self.lista_pids=[]
         self.lista_name=[]
         self.lista_mem=[]
+<<<<<<< HEAD
         self.lock=threading.Lock
+=======
+
+        self.CPU=False
+        self.MEM=False
+        self.PID=False
+
+
+    def Vaciar(self):
+        self.head = None
+        self.lista_users = []
+        self.lista_cpu = []
+        self.lista_pids = []
+        self.lista_name = []
+        self.lista_mem = []
+>>>>>>> 3f815972a427b320a75a74f1019a95273ffbf6e2
 
     def Ordenar(self,PID,CPU,MEM): #Ordena la lista de menor a mayor de acuerdo a su pid,cpu,mem recibe boolean ejem(True,False,False)
+
         if PID==True:
             temp = self.Quicksort_interno_PID(self.Lista_desordenada())
         elif CPU==True:
@@ -558,10 +626,13 @@ class Lista:
             nodo_temp=self.head
             match=False
             for n in range(Lista.length()):
-                if nodo_temp.name == proc.name():
-                    match=True
-                    nodo_temp.cpu=proc.cpu_percent()
-                    nodo_temp.mem=(proc.memory_info().vms)/(1024*1024)
+                try:
+                    if nodo_temp.name == proc.name():
+                        match=True
+                        nodo_temp.cpu=proc.cpu_percent()
+                        nodo_temp.mem=(proc.memory_info().vms)/(1024*1024)
+                except:
+                    pass
                 nodo_temp=nodo_temp.next
             if match==False:
                 self.agregar(proc)
@@ -592,9 +663,9 @@ def main():
 
 if __name__ == '__main__':
     Lista = Crear_Lista()
-    Lista.Ordenar(True,False,False)
+    Lista.PID=True
+    Lista.Ordenar(Lista.PID,Lista.CPU,Lista.MEM)
     Lista.imprimir()
-
 
     main()
 
