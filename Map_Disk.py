@@ -94,9 +94,9 @@ class App:
         
         print(lista)
 
-        Labels = ['Apps('+str(lista[0]/1073741824)+')GB','Archivos('+str(lista[1]/1073741824)+')GB',
-                  'Imagenes'+str(lista[2]/1073741824)+')GB', 'Videos'+str(lista[3]/1073741824)+')GB', 'Musica'+str(lista[4]/1073741824)+')GB',
-                  'Other'+str(lista[5]/1073741824)+')GB','Free'+str(lista[6]/1073741824)+')GB']
+        Labels = ['Apps '+str(lista[0]/1073741824)+' GB','Archivos '+str(lista[1]/1073741824)+' GB',
+                  'Imagenes '+str(lista[2]/1073741824)+' GB', 'Videos '+str(lista[3]/1073741824)+' GB', 'Musica '+str(lista[4]/1073741824)+' GB',
+                  'Other '+str(lista[5]/1073741824)+' GB','Free '+str(lista[6]/1073741824)+' GB']
         fig = {
             'data': [{'labels': Labels,
                       'values': lista,

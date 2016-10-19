@@ -5,6 +5,10 @@ import matplotlib.pyplot as plt
 from PyQt4 import QtGui
 from PyQt4 import QtCore
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
+import plotly.plotly as py
+import plotly.graph_objs as go
+from PIL import Image, ImageTk
+import Tkinter
 from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT as NavigationToolbar
 import random
 import psutil
@@ -25,19 +29,19 @@ class VentanaPrincipal(QtGui.QWidget):
         super(VentanaPrincipal, self).__init__()
         self.initUI()
         self.setup_Map_Disk_Thread()
-<<<<<<< HEAD
+#<<<<<<< HEAD
         self.setup_Save_Thread=Background_Save_Thread()
         self.setup_Save_Thread.start()
         #########################################################
         self.setup_Update_CPU_data = Background_Update_CPU_Graph()
         self.setup_Update_CPU_data.start()
         self.connect(self.setup_Update_CPU_data, QtCore.SIGNAL('CPU_Data'), self.graficaProceso)  # cambiar nombre de senal ####
-=======
+#=======
         #self.setup_Save_Thread=Background_Save_Thread()
         #self.setup_Save_Thread.start()
         self.setup_Update_Thread=Background_Update_Thread()
         self.setup_Update_Thread.start()
->>>>>>> 3f815972a427b320a75a74f1019a95273ffbf6e2
+#>>>>>>> 3f815972a427b320a75a74f1019a95273ffbf6e2
 
     def initUI(self):
         self.setGeometry(600, 400, 750, 500)
@@ -86,7 +90,7 @@ class VentanaPrincipal(QtGui.QWidget):
         btnOrden = QtGui.QPushButton('Ordenar', self)
         self.btnMapDisk = QtGui.QPushButton('Map Disk', self)
 
-<<<<<<< HEAD
+#<<<<<<< HEAD
         self.btnEliminar.setFixedSize(75,75)  #Tamano de botones
         btnGrafMem.setFixedSize(75,30)
         btnGrafCPU.setFixedSize(75,30)
@@ -96,7 +100,7 @@ class VentanaPrincipal(QtGui.QWidget):
         btnGrafMem.move(540,280)
         btnGrafCPU.move(460,280)
         self.btnMapDisk.move(460,245)
-=======
+#=======
         self.btnEliminar.setFixedSize(155,75)  #Tamano de botones
         btnOrden.setFixedSize(115, 75)
         btnGrafMem.setFixedSize(155,37.5)
@@ -108,7 +112,7 @@ class VentanaPrincipal(QtGui.QWidget):
         btnGrafMem.move(425,315)
         btnGrafProc.move(425,352.5)
         self.btnMapDisk.move(270,315)
->>>>>>> 3f815972a427b320a75a74f1019a95273ffbf6e2
+#>>>>>>> 3f815972a427b320a75a74f1019a95273ffbf6e2
 
         btnGrafMem.clicked.connect(self.graficaMemoria)
         btnGrafCPU.clicked.connect(self.graficaProceso)
@@ -122,15 +126,15 @@ class VentanaPrincipal(QtGui.QWidget):
         #Graficas
         self.figure = plt.figure()
         self.canvas = FigureCanvas(self.figure)
-<<<<<<< HEAD
+#<<<<<<< HEAD
         grid.addWidget(self.canvas)
         #self.toolbar = NavigationToolbar(self.canvas,self)        ################esto que zoom and shit
-=======
+#=======
         self.canvas2 = FigureCanvas(self.figure)
         grid.addWidget(self.canvas, 0, 1)
         grid.addWidget(self.canvas2, 1, 1)
         #self.toolbar = NavigationToolbar(self.canvas,self)
->>>>>>> 3f815972a427b320a75a74f1019a95273ffbf6e2
+#>>>>>>> 3f815972a427b320a75a74f1019a95273ffbf6e2
 
 
         self.show()
@@ -195,26 +199,118 @@ class Map_Disk_worker(QtCore.QObject):
     wait_for_input=QtCore.pyqtSignal()
     done=QtCore.pyqtSignal()
 
-    def Map_Disk(self):
-        lista = []
-        cont = 0
-        mapa = ["*.doc", "*.txt", "*.xml", "*.exc", "*.pdf", "*.dochtml", "*.dic", "*.idx", "*.rtf", "*.wri", "*.wtx",
-                "*.log", "*.zip", "*.rar", "*.zoo", "*.tgz", "*.tar", "*.uu", "*.xxe", "*.r0", "*.tbz2", "*.avi",
-                "*.iso", "*.arj"]
-        for n in mapa:
-            cont = cont + get_mapa(n)
-        lista.append(cont)
-        cont = 0
-        print("Archivos: " + str(lista[0]))
+
+    class App:
+        def __init__(self,master):
+            frame = Tkinter.Frame(master)
+            frame.pack()
+            self.button=Tkinter.Button(frame,text="REFRESH", fg='blue',
+                                       command=self.Map_Disk)
+            self.button.pack(side=Tkinter.TOP)
+            if os.path.isfile("Map_Disk.png") is False:
+                img=None
+            else:
+                img=ImageTk.PhotoImage(Image.open('Map_Disk.png'))
+            self.panel=Tkinter.Label(frame,image=img)
+            self.image=img
+            self.panel.pack(side=Tkinter.BOTTOM,fill='both',expand='yes')
 
 
 
-def get_mapa(m):
-    cont = 0
-    for root, dirnames, filenames in os.walk(raiz):
-        for filename in fnmatch.filter(filenames, m):
-            cont = cont + os.stat(os.path.join(root, filename)).st_size
-    return cont
+        def Map_Disk(self):
+            lista = []
+            cont = 0
+            #print("Apps: ")
+            cont =self.get_app()
+            lista.append(cont)
+            cont =0
+
+            #print('Archivos: ')
+            mapa = ["*.doc", "*.txt", "*.xml","*.exc", "*.pdf", "*.dochtml", "*.dic", "*.idx", "*.rtf", "*.wri", "*.wtx",
+                    "*.log", "*.zip", "*.rar", "*.zoo", "*.tgz", "*.tar", "*.uu", "*.xxe", "*.r0", "*.tbz2", "*.avi",
+                    "*.iso", "*.arj", "*.lha", ".*r00", "*.r01",'*.sh',"*.os",'*.o','*.py']
+            cont = self.get_mapa(mapa)
+            lista.append(cont)
+            cont = 0
+
+            #print("Imagenes: ")
+            mapa = ["*.png", "*.jpg", "*.jpeg", "*.gif", "*.bmp", "*.dib", "*.tif", "*.bw", "*.cdr", "*.cgm", "*.gih",
+                    "*.ico", "*.iff", "*.cpt", "*.mac", "*.pic", "*.pict", "*.pntg", "*.psd", "*.pix", "*.img"]
+            cont = self.get_mapa(mapa)
+            lista.append(cont)
+            cont = 0
+
+            #print("Videos: ")
+            mapa = ["*.avi", "*.mov", "*.wmv", "*.mng", "*.qt", "*.dvd", "*.movie", "*.mpeg", "*.mpa", "*.mpv2", "*.divx",
+                    "*.div", "*.mp2v", "*.bik"]
+            cont = self.get_mapa(mapa)
+            lista.append(cont)
+            cont = 0
+
+            #print("Musica: ")
+            mapa = ["*.mp3", "*.au", "*.wav", "*.mid", "*.aiff", "*.it"]
+            cont = self.get_mapa(mapa)
+            lista.append(cont)
+            cont = 0
+
+            for i in range(len(lista)):
+                cont=cont+lista[i]
+            d_usage = list(psutil.disk_usage('/'))
+
+            total =(d_usage[0])
+
+            free = (d_usage[2])
+
+            print total
+
+            other=total-free-cont
+            lista.append(other)
+            lista.append(free)
+
+            print("Apps: " + str(lista[0]))
+            print("Archivos: " + str(lista[1]))
+            print("Imagenes: " + str(lista[2]))
+            print("Videos: " + str(lista[3]))
+            print("Musica: " + str(lista[4]))
+
+            print(lista)
+
+            Labels = ['Apps '+str(lista[0]/1073741824)+' GB','Archivos '+str(lista[1]/1073741824)+' GB',
+                      'Imagenes '+str(lista[2]/1073741824)+' GB', 'Videos '+str(lista[3]/1073741824)+' GB', 'Musica '+str(lista[4]/1073741824)+' GB',
+                      'Other '+str(lista[5]/1073741824)+' GB','Free '+str(lista[6]/1073741824)+' GB']
+            fig = {
+                'data': [{'labels': Labels,
+                          'values': lista,
+                          'type': 'pie'}],
+                'layout': {'title': 'Disk Mapping'}
+            }
+            py.image.save_as(fig, 'Map_Disk.png')
+            img=ImageTk.PhotoImage(Image.open('Map_Disk.png'))
+            self.panel.configure(image=img)
+            self.image=img
+
+        def get_mapa(self,m):
+            cont = 0
+            for root, dirnames, filenames in os.walk(raiz):
+               for extension in m:
+                   for filename in fnmatch.filter(filenames, extension):
+                       try:
+                            cont = cont + os.stat(os.path.join(root,filename)).st_size
+                       except:
+                           pass
+            return cont
+
+        def get_app(self):
+            cont = 0
+            for root, dirnames, filenames in os.walk(raiz):
+                for filename in filenames:
+                    if os.access(os.path.join(root,filename),os.X_OK) is True:
+                        cont = cont + os.stat(os.path.join(root, filename)).st_size
+            return cont
+
+    root=Tkinter.Tk()
+    app=App(root)
+    root.mainloop()
 
 # --------------------Map Disk ----------------------
 
@@ -239,8 +335,8 @@ class Background_Save_Thread(QtCore.QThread):
 # ---------------------Background Save Thread ----------------------
 
 # ---------------------Background Update Thread ----------------------
-<<<<<<< HEAD
-=======
+#<<<<<<< HEAD
+#=======
 
 class Background_Update_Thread(QtCore.QThread):
 
@@ -258,7 +354,7 @@ class Background_Update_Thread(QtCore.QThread):
 
 
 # ---------------------Background Update Thread ----------------------
->>>>>>> 3f815972a427b320a75a74f1019a95273ffbf6e2
+#>>>>>>> 3f815972a427b320a75a74f1019a95273ffbf6e2
 
 class Background_Update_Thread(QtCore.QThread):
 
@@ -330,9 +426,9 @@ class Lista:
         self.lista_pids=[]
         self.lista_name=[]
         self.lista_mem=[]
-<<<<<<< HEAD
+#<<<<<<< HEAD
         self.lock=threading.Lock
-=======
+#=======
 
         self.CPU=False
         self.MEM=False
@@ -346,7 +442,7 @@ class Lista:
         self.lista_pids = []
         self.lista_name = []
         self.lista_mem = []
->>>>>>> 3f815972a427b320a75a74f1019a95273ffbf6e2
+#>>>>>>> 3f815972a427b320a75a74f1019a95273ffbf6e2
 
     def Ordenar(self,PID,CPU,MEM): #Ordena la lista de menor a mayor de acuerdo a su pid,cpu,mem recibe boolean ejem(True,False,False)
 
