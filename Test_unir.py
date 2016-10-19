@@ -5,10 +5,6 @@ import matplotlib.pyplot as plt
 from PyQt4 import QtGui
 from PyQt4 import QtCore
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
-import plotly.plotly as py
-import plotly.graph_objs as go
-from PIL import Image, ImageTk
-import Tkinter
 from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT as NavigationToolbar
 import random
 import psutil
@@ -30,7 +26,7 @@ class VentanaPrincipal(QtGui.QWidget):
     def __init__(self):
         super(VentanaPrincipal, self).__init__()
         self.initUI()
-        self.setup_Map_Disk_Thread()
+        #self.setup_Map_Disk_Thread()
 
         self.setup_Save_Thread=Background_Save_Thread()
         self.setup_Save_Thread.start()
@@ -41,18 +37,15 @@ class VentanaPrincipal(QtGui.QWidget):
         self.setup_Update_CPU_data = Background_Update_CPU_Graph()
         self.setup_Update_CPU_data.start()
         self.connect(self.setup_Update_CPU_data, QtCore.SIGNAL('CPU_Data'), self.graficaProceso)  # cambiar nombre de senal ####
-
         ###############################################
         self.setup_Update_MEM_data = Background_Update_MEM_Graph()
         self.setup_Update_MEM_data.start()
         self.connect(self.setup_Update_MEM_data, QtCore.SIGNAL('MEM_Data'), self.graficaMemoria)
 
-
         #self.setup_Save_Thread=Background_Save_Thread()
         #self.setup_Save_Thread.start()
         self.setup_Update_Thread=Background_Update_Thread()
         self.setup_Update_Thread.start()
-
         self.connect(self.setup_Update_Thread, QtCore.SIGNAL('Lista'),self.proc_table)
 
 
@@ -99,13 +92,10 @@ class VentanaPrincipal(QtGui.QWidget):
         self.btnMapDisk.move(270,315)
 
 
-
         btnGrafMem.clicked.connect(self.ordenar_mem)
         btnGrafCPU.clicked.connect(self.ordenar_cpu)
         btnOrden.clicked.connect(self.ordenar_pid)
 
-        #btnOrden.clicked.connect(self.)
-        #btnMapDisk.clicked.connect(Map_Disk)     #################falta esto , boton Eliminar hace algo?
 
 
 
@@ -115,13 +105,9 @@ class VentanaPrincipal(QtGui.QWidget):
         #Graficas
         self.figure = plt.figure()
         self.canvas = FigureCanvas(self.figure)
-
         self.grid.addWidget(self.canvas)
-
-        grid.addWidget(self.canvas)
-
         #self.toolbar = NavigationToolbar(self.canvas,self)        ################esto que zoom and shit
-
+#=======
         self.canvas2 = FigureCanvas(self.figure)
         self.grid.addWidget(self.canvas, 0, 1)
         self.grid.addWidget(self.canvas2, 1, 1)
@@ -213,17 +199,7 @@ class VentanaPrincipal(QtGui.QWidget):
         # ---------------------Background UpdateThread ----------------------
 
     # --------------------Map Disk Button----------------------
-    def setup_Map_Disk_Thread(self):
-        self.thread_MapDisk=QtCore.QThread()
-        self.worker_MapDisk=Map_Disk_worker()
 
-        self.worker_MapDisk.moveToThread(self.thread_MapDisk)
-
-        self.btnMapDisk.clicked.connect(self.worker_MapDisk.Map_Disk)
-        self.worker_MapDisk.wait_for_input.connect(self.enableButton)
-        self.worker_MapDisk.done.connect(self.done)
-
-        self.thread_MapDisk.start()
     # --------------------Map Disk Button----------------------
     def ordenar_mem(self):
         Lista.PID=False
@@ -240,6 +216,7 @@ class VentanaPrincipal(QtGui.QWidget):
         Lista.MEM=False
         Lista.CPU=False
 
+<<<<<<< HEAD
 
 
 # --------------------Map Disk ----------------------
@@ -250,6 +227,8 @@ class Map_Disk_worker(QtCore.QObject):
 
     
 
+=======
+>>>>>>> 6f6b88103c4a7835f0a305dceab0e9d23a887fa4
 # --------------------Map Disk ----------------------
 
 # --------------------Map Disk ----------------------
@@ -274,7 +253,6 @@ class Background_Save_Thread(QtCore.QThread):
 
 # ---------------------Background Update Thread ----------------------
 
-
 class Background_Update_Thread(QtCore.QThread):
 
     def __init__(self, parent=None):
@@ -291,24 +269,6 @@ class Background_Update_Thread(QtCore.QThread):
             self.emit(QtCore.SIGNAL('Lista'), Lista)
             time.sleep(10)
 
-
-
-# ---------------------Background Update Thread ----------------------
-
-
-class Background_Update_Thread(QtCore.QThread):
-
-    def __init__(self,parent=None):
-        super(Background_Update_Thread,self).__init__(parent)
-
-    def run (self):
-        while True:
-            time.sleep(4)
-            Lista.Vaciar()
-            for proc in psutil.process_iter():
-                Lista.agregar(proc)
-            Lista.Ordenar(Lista.PID,Lista.CPU,Lista.MEM) #whats up
-            Lista.imprimir()
 
 
 # --------------------- Background_Update_CPU_Graph ----------------------
@@ -371,12 +331,7 @@ class Lista:
         self.lista_name=[]
         self.lista_mem=[]
 
-
         self.lock=threading.Lock
-
-
-        self.lock=threading.Lock
-
 
 
         self.CPU=False
