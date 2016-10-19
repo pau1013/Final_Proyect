@@ -16,6 +16,7 @@ import threading
 #from threading import Thread
 import time
 import datetime
+from subprocess import signal
 
 
 
@@ -23,71 +24,55 @@ import datetime
 
 mapa = []
 raiz = '/home'
+data = {}
 
 class VentanaPrincipal(QtGui.QWidget):
     def __init__(self):
         super(VentanaPrincipal, self).__init__()
         self.initUI()
         self.setup_Map_Disk_Thread()
-#<<<<<<< HEAD
+
         self.setup_Save_Thread=Background_Save_Thread()
         self.setup_Save_Thread.start()
+
+        self.setup_Update_Thread = Background_Update_Thread()
+        self.setup_Update_Thread.start()
         #########################################################
         self.setup_Update_CPU_data = Background_Update_CPU_Graph()
         self.setup_Update_CPU_data.start()
         self.connect(self.setup_Update_CPU_data, QtCore.SIGNAL('CPU_Data'), self.graficaProceso)  # cambiar nombre de senal ####
-#=======
+
+        ###############################################
+        self.setup_Update_MEM_data = Background_Update_MEM_Graph()
+        self.setup_Update_MEM_data.start()
+        self.connect(self.setup_Update_MEM_data, QtCore.SIGNAL('MEM_Data'), self.graficaMemoria)
+
+
         #self.setup_Save_Thread=Background_Save_Thread()
         #self.setup_Save_Thread.start()
         self.setup_Update_Thread=Background_Update_Thread()
         self.setup_Update_Thread.start()
-#>>>>>>> 3f815972a427b320a75a74f1019a95273ffbf6e2
+
+        self.connect(self.setup_Update_Thread, QtCore.SIGNAL('Lista'),self.proc_table)
+
 
     def initUI(self):
         self.setGeometry(600, 400, 750, 500)
         self.setWindowTitle('Task Manager')
         self.setFixedSize(900, 500)
 
-        grid = QtGui.QGridLayout()
-        self.setLayout(grid)
+        self.grid = QtGui.QGridLayout()
+        self.setLayout(self.grid)
+        #self.proc_table()
 
-        # ------------------------------Tabla de Procesos------------------------------------------
-        data = {'User': Lista.lista_users,
-                'PID': Lista.lista_pids,
-                '%CPU': Lista.lista_cpu,
-                'Memory': Lista.lista_mem,
-                'Nombre de Proceso': Lista.lista_name,}  #Diccionario con los datos de la tabl
-
-        self.table = QtGui.QTableWidget(self) #Se crea la tabla con el numero de filas y columnas
-        self.table.setRowCount(Lista.length())
-        self.table.setColumnCount(5)
-
-        horHeaders = []  # Ingresa los datos a la tabla
-        for n, key in enumerate(sorted(data.keys())):
-            horHeaders.append(key)
-            for m, item in enumerate(data[key]):
-                newitem = QtGui.QTableWidgetItem(item)  ########how does this work tho? ask sam
-                self.table.setItem(m, n, newitem)
-
-        # Se agregab los headers
-        self.table.setHorizontalHeaderLabels(horHeaders)
-
-        # Tamano de la tabla
-        self.table.resizeColumnsToContents()
-        self.table.resizeRowsToContents()
-        self.table.setFixedSize(575, 250)
-
-        grid.addWidget(self.table, 0, 0)
-
-        self.table.cellClicked.connect(self.seleccionaProceso) #Para seleccionar proceso
-        # ------------------------------Tabla de Procesos------------------------------------------
+        #aqui estaba tabla proc
 
 
         #------------------------------Botones!------------------------------------------
         self.btnEliminar = QtGui.QPushButton('Terminar', self)
-        btnGrafCPU = QtGui.QPushButton('CPU', self)            #############cambie de proc a cpu
-        btnGrafMem= QtGui.QPushButton('Memoria', self)
-        btnOrden = QtGui.QPushButton('Ordenar', self)
+        btnGrafCPU = QtGui.QPushButton('Ordenar CPU', self)            #############cambie de proc a cpu
+        btnGrafMem= QtGui.QPushButton('Ordenar Memoria', self)
+        btnOrden = QtGui.QPushButton('Ordenar PID', self)
         self.btnMapDisk = QtGui.QPushButton('Map Disk', self)
 
 #<<<<<<< HEAD
@@ -104,18 +89,22 @@ class VentanaPrincipal(QtGui.QWidget):
         self.btnEliminar.setFixedSize(155,75)  #Tamano de botones
         btnOrden.setFixedSize(115, 75)
         btnGrafMem.setFixedSize(155,37.5)
-        btnGrafProc.setFixedSize(155,37.5)
+        btnGrafCPU.setFixedSize(155,37.5)
         self.btnMapDisk.setFixedSize(155,75)
 
         self.btnEliminar.move(115,315)
         btnOrden.move(0,315)
         btnGrafMem.move(425,315)
-        btnGrafProc.move(425,352.5)
+        btnGrafCPU.move(425,352.5)
         self.btnMapDisk.move(270,315)
-#>>>>>>> 3f815972a427b320a75a74f1019a95273ffbf6e2
 
-        btnGrafMem.clicked.connect(self.graficaMemoria)
-        btnGrafCPU.clicked.connect(self.graficaProceso)
+
+
+        btnGrafMem.clicked.connect(self.ordenar_mem)
+        btnGrafCPU.clicked.connect(self.ordenar_cpu)
+        btnOrden.clicked.connect(self.ordenar_pid)
+
+        #btnOrden.clicked.connect(self.)
         #btnMapDisk.clicked.connect(Map_Disk)     #################falta esto , boton Eliminar hace algo?
 
 
@@ -126,18 +115,55 @@ class VentanaPrincipal(QtGui.QWidget):
         #Graficas
         self.figure = plt.figure()
         self.canvas = FigureCanvas(self.figure)
-#<<<<<<< HEAD
+
+        self.grid.addWidget(self.canvas)
+
         grid.addWidget(self.canvas)
+
         #self.toolbar = NavigationToolbar(self.canvas,self)        ################esto que zoom and shit
-#=======
+
         self.canvas2 = FigureCanvas(self.figure)
-        grid.addWidget(self.canvas, 0, 1)
-        grid.addWidget(self.canvas2, 1, 1)
+        self.grid.addWidget(self.canvas, 0, 1)
+        self.grid.addWidget(self.canvas2, 1, 1)
         #self.toolbar = NavigationToolbar(self.canvas,self)
-#>>>>>>> 3f815972a427b320a75a74f1019a95273ffbf6e2
 
 
         self.show()
+
+    def proc_table(self, Lista):
+
+       #------------------------------Tabla de Procesos------------------------------------------
+
+        data = {'User': Lista.lista_users,
+                'PID': Lista.lista_pids,
+                '%CPU': Lista.lista_cpu,
+                'Memory': Lista.lista_mem,
+                'Nombre de Proceso': Lista.lista_name,}  #Diccionario con los datos de la tabl
+
+        self.table = QtGui.QTableWidget(self) #Se crea la tabla con el numero de filas y columnas
+        self.table.setRowCount(Lista.length())
+        self.table.setColumnCount(5)
+        self.table.setSortingEnabled(True)
+
+        horHeaders = []  # Ingresa los datos a la tabla
+        for n, key in enumerate(sorted(data.keys())):
+            horHeaders.append(key)
+            for m, item in enumerate(data[key]):
+                newitem = QtGui.QTableWidgetItem(item)  ########how does this work tho? ask sam
+                self.table.setItem(m, n, newitem)
+
+        # Se agregab los headers
+        self.table.setHorizontalHeaderLabels(horHeaders)
+
+        # Tamano de la tabla
+        self.table.resizeColumnsToContents()
+        self.table.resizeRowsToContents()
+        self.table.setFixedSize(575, 250)
+
+        self.grid.addWidget(self.table, 0, 0)
+
+        self.table.cellClicked.connect(self.seleccionaProceso) #Para seleccionar proceso
+        #------------------------------Tabla de Procesos------------------------------------------
 
     def graficaMemoria(self, data):
         ax = self.figure.add_subplot(111)
@@ -153,8 +179,9 @@ class VentanaPrincipal(QtGui.QWidget):
 
     def seleccionaProceso(self, row, column):
         print("Row %d and Column %d was clicked" % (row, column))
-        pidSelec = self.table.item(row,3).text()
-        print("PID: "+ pidSelec)
+        self.pidSelec = self.table.item(row,3).text()
+        self.pidSelec=int(self.pidSelec)
+        print("PID: "+ self.pidSelec)
 
 
     # --------------------Boton presionado con thread-----------------------
@@ -170,12 +197,20 @@ class VentanaPrincipal(QtGui.QWidget):
     def setup_Save_Thread(self):
         #self.thread_Save=QtCore.QThread()
         self.thread_Save=Background_Save_Thread()
+
         #self.worker_Save=Background_Save_Worker()
         #self.worker_Save.moveToThread(self.thread_Save)
 
         self.thread_Save.start()
 
     # ---------------------Background Save Thread ----------------------
+        # ---------------------Background Update Thread ----------------------
+
+    def setup_Update_Thread(self):
+        self.thread_Update = Background_Update_Thread()
+        self.thread_Update.start()
+
+        # ---------------------Background UpdateThread ----------------------
 
     # --------------------Map Disk Button----------------------
     def setup_Map_Disk_Thread(self):
@@ -190,7 +225,20 @@ class VentanaPrincipal(QtGui.QWidget):
 
         self.thread_MapDisk.start()
     # --------------------Map Disk Button----------------------
+    def ordenar_mem(self):
+        Lista.PID=False
+        Lista.MEM=True
+        Lista.CPU=False
 
+    def ordenar_cpu(self):
+        Lista.PID=False
+        Lista.MEM=False
+        Lista.CPU=True
+
+    def ordenar_pid(self):
+        Lista.PID=True
+        Lista.MEM=False
+        Lista.CPU=False
 
 
 
@@ -225,26 +273,28 @@ class Background_Save_Thread(QtCore.QThread):
 # ---------------------Background Save Thread ----------------------
 
 # ---------------------Background Update Thread ----------------------
-#<<<<<<< HEAD
-#=======
+
 
 class Background_Update_Thread(QtCore.QThread):
 
-    def __init__(self,parent=None):
-        super(Background_Update_Thread,self).__init__(parent)
+    def __init__(self, parent=None):
+        super(Background_Update_Thread, self).__init__(parent)
 
-    def run (self):
+    def run(self):
         while True:
-            time.sleep(4)
+
             Lista.Vaciar()
             for proc in psutil.process_iter():
                 Lista.agregar(proc)
             Lista.Ordenar(Lista.PID,Lista.CPU,Lista.MEM)
             Lista.imprimir()
+            self.emit(QtCore.SIGNAL('Lista'), Lista)
+            time.sleep(10)
+
 
 
 # ---------------------Background Update Thread ----------------------
-#>>>>>>> 3f815972a427b320a75a74f1019a95273ffbf6e2
+
 
 class Background_Update_Thread(QtCore.QThread):
 
@@ -260,6 +310,7 @@ class Background_Update_Thread(QtCore.QThread):
             Lista.Ordenar(Lista.PID,Lista.CPU,Lista.MEM) #whats up
             Lista.imprimir()
 
+
 # --------------------- Background_Update_CPU_Graph ----------------------
 
 class Background_Update_CPU_Graph(QtCore.QThread):
@@ -271,8 +322,10 @@ class Background_Update_CPU_Graph(QtCore.QThread):
         while True:
             #time.sleep(1)
             data = []
-            for i in range(0, 8):
-                data.append(psutil.cpu_percent(interval = 0.10, percpu= False))
+            for i in range(0, 100):
+                a = psutil.cpu_percent(interval=0.10, percpu= False)
+                q = a / 10
+                data.append(q)
             self.emit(QtCore.SIGNAL('CPU_Data'), data)
 
 
@@ -284,12 +337,13 @@ class Background_Update_MEM_Graph(QtCore.QThread):
 
     def run(self):
         while True:
-            time.sleep(1)
+            time.sleep(0.5)
             data = []
-            for i in range(0, 8):
-                mem_percent = float(psutil.used_phymem()) / self.max_mem * 100
-                data.append(mem_percent)
-            self.emit(QtCore.SIGNAL('CPU_Data'), data)
+            for i in range(0, 100):
+                q = psutil.virtual_memory()
+                mem = q.percent / 10
+                data.append(mem)
+            self.emit(QtCore.SIGNAL('MEM_Data'), data)
 
 ###########################################################################################################
 
@@ -316,9 +370,14 @@ class Lista:
         self.lista_pids=[]
         self.lista_name=[]
         self.lista_mem=[]
-#<<<<<<< HEAD
+
+
         self.lock=threading.Lock
-#=======
+
+
+        self.lock=threading.Lock
+
+
 
         self.CPU=False
         self.MEM=False
@@ -332,7 +391,7 @@ class Lista:
         self.lista_pids = []
         self.lista_name = []
         self.lista_mem = []
-#>>>>>>> 3f815972a427b320a75a74f1019a95273ffbf6e2
+
 
     def Ordenar(self,PID,CPU,MEM): #Ordena la lista de menor a mayor de acuerdo a su pid,cpu,mem recibe boolean ejem(True,False,False)
 
