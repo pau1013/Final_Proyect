@@ -13,8 +13,11 @@ import threading
 import time
 import datetime
 from subprocess import signal
+import plotly.plotly as py
+import plotly.graph_objs as go
+from PIL import Image, ImageTk
 
-
+py.sign_in('pau_1013', '6jnl8o6nbd')
 
 
 
@@ -26,7 +29,7 @@ class VentanaPrincipal(QtGui.QWidget):
     def __init__(self):
         super(VentanaPrincipal, self).__init__()
         self.initUI()
-        #self.setup_Map_Disk_Thread()
+        self.setup_Map_Disk_Thread()
 
         self.setup_Save_Thread=Background_Save_Thread()
         self.setup_Save_Thread.start()
@@ -95,7 +98,7 @@ class VentanaPrincipal(QtGui.QWidget):
         btnGrafMem.clicked.connect(self.ordenar_mem)
         btnGrafCPU.clicked.connect(self.ordenar_cpu)
         btnOrden.clicked.connect(self.ordenar_pid)
-
+        self.btnEliminar.clicked.connect(self.Eliminar)
 
 
 
@@ -167,7 +170,7 @@ class VentanaPrincipal(QtGui.QWidget):
         print("Row %d and Column %d was clicked" % (row, column))
         self.pidSelec = self.table.item(row,3).text()
         self.pidSelec=int(self.pidSelec)
-        print("PID: "+ self.pidSelec)
+        print("PID: "+ str(self.pidSelec))
 
 
     # --------------------Boton presionado con thread-----------------------
@@ -200,6 +203,18 @@ class VentanaPrincipal(QtGui.QWidget):
 
     # --------------------Map Disk Button----------------------
 
+    def setup_Map_Disk_Thread(self):
+        self.thread_MapDisk = QtCore.QThread()
+        self.worker_MapDisk = Map_Disk_worker()
+
+        self.worker_MapDisk.moveToThread(self.thread_MapDisk)
+
+        self.btnMapDisk.clicked.connect(self.worker_MapDisk.Map_Disk)
+        self.worker_MapDisk.wait_for_input.connect(self.enableButton)
+        self.worker_MapDisk.done.connect(self.done)
+
+        self.thread_MapDisk.start()
+
     # --------------------Map Disk Button----------------------
     def ordenar_mem(self):
         Lista.PID=False
@@ -216,7 +231,13 @@ class VentanaPrincipal(QtGui.QWidget):
         Lista.MEM=False
         Lista.CPU=False
 
-<<<<<<< HEAD
+    def Eliminar(self):
+        try:
+            os.kill(self.pidSelec, signal.SIGKILL)
+        except:
+            pass
+        self.pidSelec=None
+
 
 
 # --------------------Map Disk ----------------------
@@ -224,11 +245,100 @@ class Map_Disk_worker(QtCore.QObject):
     wait_for_input=QtCore.pyqtSignal()
     done=QtCore.pyqtSignal()
 
+    def Map_Disk(self):
+        lista = []
+        cont = 0
+        # print("Apps: ")
+        cont = self.get_app()
+        lista.append(cont)
+        cont = 0
+
+        # print('Archivos: ')
+        mapa = ["*.doc", "*.txt", "*.xml", "*.exc", "*.pdf", "*.dochtml", "*.dic", "*.idx", "*.rtf", "*.wri", "*.wtx",
+                "*.log", "*.zip", "*.rar", "*.zoo", "*.tgz", "*.tar", "*.uu", "*.xxe", "*.r0", "*.tbz2", "*.avi",
+                "*.iso", "*.arj", "*.lha", ".*r00", "*.r01", '*.sh', "*.os", '*.o', '*.py']
+        cont = self.get_mapa(mapa)
+        lista.append(cont)
+        cont = 0
+
+        # print("Imagenes: ")
+        mapa = ["*.png", "*.jpg", "*.jpeg", "*.gif", "*.bmp", "*.dib", "*.tif", "*.bw", "*.cdr", "*.cgm", "*.gih",
+                "*.ico", "*.iff", "*.cpt", "*.mac", "*.pic", "*.pict", "*.pntg", "*.psd", "*.pix", "*.img"]
+        cont = self.get_mapa(mapa)
+        lista.append(cont)
+        cont = 0
+
+        # print("Videos: ")
+        mapa = ["*.avi", "*.mov", "*.wmv", "*.mng", "*.qt", "*.dvd", "*.movie", "*.mpeg", "*.mpa", "*.mpv2", "*.divx",
+                "*.div", "*.mp2v", "*.bik"]
+        cont = self.get_mapa(mapa)
+        lista.append(cont)
+        cont = 0
+
+        # print("Musica: ")
+        mapa = ["*.mp3", "*.au", "*.wav", "*.mid", "*.aiff", "*.it"]
+        cont = self.get_mapa(mapa)
+        lista.append(cont)
+        cont = 0
+
+        for i in range(len(lista)):
+            cont = cont + lista[i]
+        d_usage = list(psutil.disk_usage('/'))
+
+        total = (d_usage[0])
+
+        free = (d_usage[2])
+
+        print total
+
+        other = total - free - cont
+        lista.append(other)
+        lista.append(free)
+
+        print("Apps: " + str(lista[0]))
+        print("Archivos: " + str(lista[1]))
+        print("Imagenes: " + str(lista[2]))
+        print("Videos: " + str(lista[3]))
+        print("Musica: " + str(lista[4]))
+
+        print(lista)
+
+        Labels = ['Apps ' + str(lista[0] / 1073741824) + ' GB', 'Archivos ' + str(lista[1] / 1073741824) + ' GB',
+                  'Imagenes ' + str(lista[2] / 1073741824) + ' GB', 'Videos' + str(lista[3] / 1073741824) + ' GB',
+                  'Musica ' + str(lista[4] / 1073741824) + ' GB',
+                  'Other ' + str(lista[5] / 1073741824) + ' GB', 'Free' + str(lista[6] / 1073741824) + ' GB']
+        fig = {
+            'data': [{'labels': Labels,
+                      'values': lista,
+                      'type': 'pie'}],
+            'layout': {'title': 'Disk Mapping'}
+        }
+        py.image.save_as(fig, 'Map_Disk.png')
+        img=Image.open("Map_Disk.png")
+        img.show()
+
+
+        #py.plot(fig)
+
+    def get_mapa(self,m):
+        cont = 0
+        for root, dirnames, filenames in os.walk(raiz):
+            for extension in m:
+                for filename in fnmatch.filter(filenames, extension):
+                    cont = cont + os.stat(os.path.join(root, filename)).st_size
+        return cont
+
+    def get_app(self):
+        cont = 0
+        for root, dirnames, filenames in os.walk(raiz):
+            for filename in filenames:
+                if os.access(os.path.join(root,filename),os.X_OK) is True:
+                    cont = cont + os.stat(os.path.join(root, filename)).st_size
+        return cont
 
     
 
-=======
->>>>>>> 6f6b88103c4a7835f0a305dceab0e9d23a887fa4
+
 # --------------------Map Disk ----------------------
 
 # --------------------Map Disk ----------------------
@@ -663,6 +773,7 @@ def main():
 
 if __name__ == '__main__':
     Lista = Crear_Lista()
+    #Lista=Lista()
     Lista.PID=True
     Lista.Ordenar(Lista.PID,Lista.CPU,Lista.MEM)
     Lista.imprimir()
