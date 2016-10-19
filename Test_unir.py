@@ -31,11 +31,7 @@ class VentanaPrincipal(QtGui.QWidget):
         super(VentanaPrincipal, self).__init__()
         self.initUI()
         self.setup_Map_Disk_Thread()
-<<<<<<< HEAD
 
-=======
-#<<<<<<< HEAD
->>>>>>> a182a1369475eb749ab7c6062e6fa8ea51d74fd9
         self.setup_Save_Thread=Background_Save_Thread()
         self.setup_Save_Thread.start()
 
@@ -45,25 +41,20 @@ class VentanaPrincipal(QtGui.QWidget):
         self.setup_Update_CPU_data = Background_Update_CPU_Graph()
         self.setup_Update_CPU_data.start()
         self.connect(self.setup_Update_CPU_data, QtCore.SIGNAL('CPU_Data'), self.graficaProceso)  # cambiar nombre de senal ####
-<<<<<<< HEAD
+
         ###############################################
         self.setup_Update_MEM_data = Background_Update_MEM_Graph()
         self.setup_Update_MEM_data.start()
         self.connect(self.setup_Update_MEM_data, QtCore.SIGNAL('MEM_Data'), self.graficaMemoria)
 
-=======
-#=======
->>>>>>> a182a1369475eb749ab7c6062e6fa8ea51d74fd9
+
         #self.setup_Save_Thread=Background_Save_Thread()
         #self.setup_Save_Thread.start()
         self.setup_Update_Thread=Background_Update_Thread()
         self.setup_Update_Thread.start()
-<<<<<<< HEAD
+
         self.connect(self.setup_Update_Thread, QtCore.SIGNAL('Lista'),self.proc_table)
 
-=======
-#>>>>>>> 3f815972a427b320a75a74f1019a95273ffbf6e2
->>>>>>> a182a1369475eb749ab7c6062e6fa8ea51d74fd9
 
     def initUI(self):
         self.setGeometry(600, 400, 750, 500)
@@ -106,10 +97,7 @@ class VentanaPrincipal(QtGui.QWidget):
         btnGrafMem.move(425,315)
         btnGrafCPU.move(425,352.5)
         self.btnMapDisk.move(270,315)
-<<<<<<< HEAD
-=======
-#>>>>>>> 3f815972a427b320a75a74f1019a95273ffbf6e2
->>>>>>> a182a1369475eb749ab7c6062e6fa8ea51d74fd9
+
 
 
         btnGrafMem.clicked.connect(self.ordenar_mem)
@@ -127,22 +115,17 @@ class VentanaPrincipal(QtGui.QWidget):
         #Graficas
         self.figure = plt.figure()
         self.canvas = FigureCanvas(self.figure)
-#<<<<<<< HEAD
-<<<<<<< HEAD
+
         self.grid.addWidget(self.canvas)
-=======
+
         grid.addWidget(self.canvas)
->>>>>>> a182a1369475eb749ab7c6062e6fa8ea51d74fd9
+
         #self.toolbar = NavigationToolbar(self.canvas,self)        ################esto que zoom and shit
-#=======
+
         self.canvas2 = FigureCanvas(self.figure)
         self.grid.addWidget(self.canvas, 0, 1)
         self.grid.addWidget(self.canvas2, 1, 1)
         #self.toolbar = NavigationToolbar(self.canvas,self)
-<<<<<<< HEAD
-=======
-#>>>>>>> 3f815972a427b320a75a74f1019a95273ffbf6e2
->>>>>>> a182a1369475eb749ab7c6062e6fa8ea51d74fd9
 
 
         self.show()
@@ -400,11 +383,7 @@ class Background_Save_Thread(QtCore.QThread):
 # ---------------------Background Save Thread ----------------------
 
 # ---------------------Background Update Thread ----------------------
-<<<<<<< HEAD
-=======
-#<<<<<<< HEAD
-#=======
->>>>>>> a182a1369475eb749ab7c6062e6fa8ea51d74fd9
+
 
 class Background_Update_Thread(QtCore.QThread):
 
@@ -423,10 +402,9 @@ class Background_Update_Thread(QtCore.QThread):
             time.sleep(10)
 
 
-<<<<<<< HEAD
-=======
+
 # ---------------------Background Update Thread ----------------------
-#>>>>>>> 3f815972a427b320a75a74f1019a95273ffbf6e2
+
 
 class Background_Update_Thread(QtCore.QThread):
 
@@ -442,7 +420,7 @@ class Background_Update_Thread(QtCore.QThread):
             Lista.Ordenar(Lista.PID,Lista.CPU,Lista.MEM) #whats up
             Lista.imprimir()
 
->>>>>>> a182a1369475eb749ab7c6062e6fa8ea51d74fd9
+
 # --------------------- Background_Update_CPU_Graph ----------------------
 
 class Background_Update_CPU_Graph(QtCore.QThread):
@@ -502,15 +480,14 @@ class Lista:
         self.lista_pids=[]
         self.lista_name=[]
         self.lista_mem=[]
-<<<<<<< HEAD
+
 
         self.lock=threading.Lock
 
-=======
-#<<<<<<< HEAD
+
         self.lock=threading.Lock
-#=======
->>>>>>> a182a1369475eb749ab7c6062e6fa8ea51d74fd9
+
+
 
         self.CPU=False
         self.MEM=False
@@ -524,11 +501,7 @@ class Lista:
         self.lista_pids = []
         self.lista_name = []
         self.lista_mem = []
-<<<<<<< HEAD
 
-=======
-#>>>>>>> 3f815972a427b320a75a74f1019a95273ffbf6e2
->>>>>>> a182a1369475eb749ab7c6062e6fa8ea51d74fd9
 
     def Ordenar(self,PID,CPU,MEM): #Ordena la lista de menor a mayor de acuerdo a su pid,cpu,mem recibe boolean ejem(True,False,False)
 
