@@ -34,8 +34,8 @@ class VentanaPrincipal(QtGui.QWidget):
         self.setup_Save_Thread=Background_Save_Thread()
         self.setup_Save_Thread.start()
 
-        self.setup_Update_Thread = Background_Update_Thread()
-        self.setup_Update_Thread.start()
+        #self.setup_Update_Thread = Background_Update_Thread()
+        #self.setup_Update_Thread.start()
         #########################################################
         self.setup_Update_CPU_data = Background_Update_CPU_Graph()
         self.setup_Update_CPU_data.start()
@@ -49,6 +49,7 @@ class VentanaPrincipal(QtGui.QWidget):
         #self.setup_Save_Thread.start()
         self.setup_Update_Thread=Background_Update_Thread()
         self.setup_Update_Thread.start()
+
         self.connect(self.setup_Update_Thread, QtCore.SIGNAL('Lista'),self.proc_table)
 
 
@@ -65,7 +66,7 @@ class VentanaPrincipal(QtGui.QWidget):
 
 
         #------------------------------Botones!------------------------------------------
-        self.btnEliminar = QtGui.QPushButton('Terminar', self)
+        self.btnEliminar = QtGui.QPushButton('Kill', self)
         btnGrafCPU = QtGui.QPushButton('Ordenar CPU', self)            #############cambie de proc a cpu
         btnGrafMem= QtGui.QPushButton('Ordenar Memoria', self)
         btnOrden = QtGui.QPushButton('Ordenar PID', self)
@@ -135,6 +136,7 @@ class VentanaPrincipal(QtGui.QWidget):
         self.table.setSortingEnabled(True)
 
         horHeaders = []  # Ingresa los datos a la tabla
+
         for n, key in enumerate(sorted(data.keys())):
             horHeaders.append(key)
             for m, item in enumerate(data[key]):
@@ -217,16 +219,22 @@ class VentanaPrincipal(QtGui.QWidget):
 
     # --------------------Map Disk Button----------------------
     def ordenar_mem(self):
+        if Lista.MEM==True:
+            Lista.Reverse=not (Lista.Reverse)
         Lista.PID=False
         Lista.MEM=True
         Lista.CPU=False
 
     def ordenar_cpu(self):
+        if Lista.CPU==True:
+            Lista.Reverse=not (Lista.Reverse)
         Lista.PID=False
         Lista.MEM=False
         Lista.CPU=True
 
     def ordenar_pid(self):
+        if Lista.PID==True:
+            Lista.Reverse=not (Lista.Reverse)
         Lista.PID=True
         Lista.MEM=False
         Lista.CPU=False
@@ -375,9 +383,10 @@ class Background_Update_Thread(QtCore.QThread):
             for proc in psutil.process_iter():
                 Lista.agregar(proc)
             Lista.Ordenar(Lista.PID,Lista.CPU,Lista.MEM)
+            Lista.reverse()
             Lista.imprimir()
             self.emit(QtCore.SIGNAL('Lista'), Lista)
-            time.sleep(10)
+            time.sleep(7)
 
 
 
@@ -422,8 +431,8 @@ class procs: #proc es un objeto de la clase psutil del cual podemos obtener toda
         #self.proc=proc
         self.username=proc.username()
         self.pid=proc.pid
-        self.cpu=proc.cpu_percent()
-        self.mem=(proc.memory_info().vms)/(1024*1024)
+        self.cpu=float(proc.cpu_percent())
+        self.mem=float((proc.memory_info().vms)/(1024*1024))
         self.name=proc.name()
 
         self.next = None
@@ -441,13 +450,11 @@ class Lista:
         self.lista_name=[]
         self.lista_mem=[]
 
-        self.lock=threading.Lock
-
 
         self.CPU=False
         self.MEM=False
         self.PID=False
-
+        self.Reverse=False
 
     def Vaciar(self):
         self.head = None
@@ -462,13 +469,15 @@ class Lista:
 
         if PID==True:
             temp = self.Quicksort_interno_PID(self.Lista_desordenada())
+
         elif CPU==True:
             temp = self.Quicksort_interno_CPU(self.Lista_desordenada())
+
         elif MEM==True:
             temp = self.Quicksort_interno_MEM(self.Lista_desordenada())
 
-
         self.head=temp[0]
+
         self.head.prev=None
 
         nodo_temp=self.head
@@ -553,9 +562,9 @@ class Lista:
                     else:
                         derecha.append(list[piv])
 
-            self.Quicksort_interno_PID(izquierda)
+            self.Quicksort_interno_CPU(izquierda)
             izquierda.append(Pivote)
-            self.Quicksort_interno_PID(derecha)
+            self.Quicksort_interno_CPU(derecha)
 
             i = 0
             j = 0
@@ -596,9 +605,9 @@ class Lista:
                     else:
                         derecha.append(list[piv])
 
-            self.Quicksort_interno_PID(izquierda)
+            self.Quicksort_interno_MEM(izquierda)
             izquierda.append(Pivote)
-            self.Quicksort_interno_PID(derecha)
+            self.Quicksort_interno_MEM(derecha)
 
             i = 0
             j = 0
@@ -651,7 +660,6 @@ class Lista:
         self.lista_cpu= []
         self.lista_mem = []
         self.lista_name = []
-        cont=0
         string=""
         if temp!= None:
             while temp is not None:
@@ -663,7 +671,7 @@ class Lista:
                 self.lista_name.append(str(temp.name))
                 temp=temp.next
 
-            print(string)
+            #print(string)
 
 
     def agregar(self,proceso): #agrega un proc a la lista
@@ -694,6 +702,33 @@ class Lista:
                 count = count + 1
                 temp=temp.next
         return count
+    def reverse(self):
+
+        if self.Reverse==True:
+            list_nodes=self.Lista_desordenada()
+            list_nodes=list_nodes[::-1]
+
+            self.head=list_nodes[0]
+
+            self.head.prev = None
+
+            nodo_temp = self.head
+            i = 1
+            while i < len(list_nodes):
+                nodo_temp.next = list_nodes[i]
+                i = i + 1
+                if i == len(list_nodes) - 1:
+                    list_nodes[i].next = None
+                nodo_temp = nodo_temp.next
+
+            count = 0
+            nodo_temp = self.head
+            while nodo_temp != None:
+                nodo_temp.posicion = count
+                nodo_temp = nodo_temp.next
+                count = count + 1
+
+        
 
 
     def busqueda_PID(self,valor): #Regresa el proc anterior al que se busco, la lista funciona solo con next, era necesario para remover
@@ -731,22 +766,8 @@ class Lista:
 
         archi.close()
 
-    def Actualizar(self):# Actualiza la lista con los nuevos resultados
-        for proc in psutil.process_iter():
-            nodo_temp=self.head
-            match=False
-            for n in range(Lista.length()):
-                try:
-                    if nodo_temp.name == proc.name():
-                        match=True
-                        nodo_temp.cpu=proc.cpu_percent()
-                        nodo_temp.mem=(proc.memory_info().vms)/(1024*1024)
-                except:
-                    pass
-                nodo_temp=nodo_temp.next
-            if match==False:
-                self.agregar(proc)
-        self.Ordenar(True,False,False)
+
+
 
 
 def Crear_Lista(): #Regresa una lista con todos los procesos actuales
