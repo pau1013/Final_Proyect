@@ -71,29 +71,33 @@ class VentanaPrincipal(QtGui.QWidget):
         btnGrafMem= QtGui.QPushButton('Ordenar Memoria', self)
         btnOrden = QtGui.QPushButton('Ordenar PID', self)
         self.btnMapDisk = QtGui.QPushButton('Map Disk', self)
+        self.btnBrrCache=QtGui.QPushButton('Borrar Cache',self)
 
 #<<<<<<< HEAD
-        self.btnEliminar.setFixedSize(75,75)  #Tamano de botones
-        btnGrafMem.setFixedSize(75,30)
-        btnGrafCPU.setFixedSize(75,30)
-        self.btnMapDisk.setFixedSize(155,30)
-
-        self.btnEliminar.move(460,13)
-        btnGrafMem.move(540,280)
-        btnGrafCPU.move(460,280)
-        self.btnMapDisk.move(460,245)
+        # self.btnEliminar.setFixedSize(75,75)  #Tamano de botones
+        # btnGrafMem.setFixedSize(75,30)
+        # btnGrafCPU.setFixedSize(75,30)
+        # self.btnMapDisk.setFixedSize(155,30)
+        # self.btnBrrCache.setFixedSize(75,30)
+        #
+        # self.btnEliminar.move(460,13)
+        # btnGrafMem.move(540,280)
+        # btnGrafCPU.move(460,280)
+        # self.btnMapDisk.move(460,245)
 #=======
         self.btnEliminar.setFixedSize(155,75)  #Tamano de botones
         btnOrden.setFixedSize(115, 75)
         btnGrafMem.setFixedSize(155,37.5)
         btnGrafCPU.setFixedSize(155,37.5)
         self.btnMapDisk.setFixedSize(155,75)
+        self.btnBrrCache.setFixedSize(115, 30)
 
         self.btnEliminar.move(115,315)
         btnOrden.move(0,315)
         btnGrafMem.move(425,315)
         btnGrafCPU.move(425,352.5)
         self.btnMapDisk.move(270,315)
+        self.btnBrrCache.move(0,400)
 
 
         btnGrafMem.clicked.connect(self.ordenar_mem)
@@ -728,7 +732,7 @@ class Lista:
                 nodo_temp = nodo_temp.next
                 count = count + 1
 
-        
+
 
 
     def busqueda_PID(self,valor): #Regresa el proc anterior al que se busco, la lista funciona solo con next, era necesario para remover
