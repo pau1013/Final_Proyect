@@ -56,12 +56,12 @@ class VentanaPrincipal(QtGui.QWidget):
     def initUI(self):
         self.setGeometry(600, 400, 750, 500)
         self.setWindowTitle('Task Manager')
-        self.setFixedSize(900, 500)
+        self.setFixedSize(900, 550)
 
         self.grid = QtGui.QGridLayout()
         self.setLayout(self.grid)
         #self.proc_table()
-
+        
         #aqui estaba tabla proc
 
 
@@ -164,12 +164,14 @@ class VentanaPrincipal(QtGui.QWidget):
         ax = self.figure.add_subplot(111)
         ax.hold(False)
         ax.plot(data, 'b.-')
+        ax.set_ylim([0, 10])
         self.canvas.draw()
 
     def graficaProceso(self, data):
         ax = self.figure.add_subplot(111)
         ax.hold(False)
         ax.plot(data, 'r.-')
+
         self.canvas2.draw()
 
     def seleccionaProceso(self, row, column):
