@@ -56,7 +56,7 @@ class VentanaPrincipal(QtGui.QWidget):
     def initUI(self):
         self.setGeometry(600, 400, 750, 500)
         self.setWindowTitle('Task Manager')
-        self.setFixedSize(900, 500)
+        self.setFixedSize(900, 550)
 
         self.grid = QtGui.QGridLayout()
         self.setLayout(self.grid)
@@ -72,6 +72,7 @@ class VentanaPrincipal(QtGui.QWidget):
         btnOrden = QtGui.QPushButton('Ordenar PID', self)
         self.btnMapDisk = QtGui.QPushButton('Map Disk', self)
         self.btnBrrCache=QtGui.QPushButton('Borrar Cache',self)
+        self.btnMapFolders=QtGui.QPushButton('Map Folders',self)
 
 #<<<<<<< HEAD
         # self.btnEliminar.setFixedSize(75,75)  #Tamano de botones
@@ -91,6 +92,7 @@ class VentanaPrincipal(QtGui.QWidget):
         btnGrafCPU.setFixedSize(155,37.5)
         self.btnMapDisk.setFixedSize(155,75)
         self.btnBrrCache.setFixedSize(115, 30)
+        self.btnMapFolders.setFixedSize(115, 30)
 
         self.btnEliminar.move(115,315)
         btnOrden.move(0,315)
@@ -98,13 +100,13 @@ class VentanaPrincipal(QtGui.QWidget):
         btnGrafCPU.move(425,352.5)
         self.btnMapDisk.move(270,315)
         self.btnBrrCache.move(0,400)
-
+        self.btnMapFolders.move(115,400)
 
         btnGrafMem.clicked.connect(self.ordenar_mem)
         btnGrafCPU.clicked.connect(self.ordenar_cpu)
         btnOrden.clicked.connect(self.ordenar_pid)
         self.btnEliminar.clicked.connect(self.Eliminar)
-
+        self.btnMapFolders.clicked.connect(self.map_folders)
 
 
         # ------------------------------Botones!------------------------------------------
@@ -164,12 +166,15 @@ class VentanaPrincipal(QtGui.QWidget):
         ax = self.figure.add_subplot(111)
         ax.hold(False)
         ax.plot(data, 'b.-')
+        ax.set_ylim([0,6])
         self.canvas.draw()
+        
 
     def graficaProceso(self, data):
         ax = self.figure.add_subplot(111)
         ax.hold(False)
         ax.plot(data, 'r.-')
+        ax.set_ylim([0,10])
         self.canvas2.draw()
 
     def seleccionaProceso(self, row, column):
@@ -250,6 +255,8 @@ class VentanaPrincipal(QtGui.QWidget):
             pass
         self.pidSelec=None
 
+    def map_folders(self):
+        os.system('baobab /')       
 
 
 # --------------------Map Disk ----------------------
