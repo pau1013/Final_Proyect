@@ -30,6 +30,8 @@ class VentanaPrincipal(QtGui.QWidget):
         super(VentanaPrincipal, self).__init__()
         self.initUI()
         self.setup_Map_Disk_Thread()
+        self.setup_Limpiar_Thread()
+        self.setup_Folders_Thread()
 
         self.setup_Save_Thread=Background_Save_Thread()
         self.setup_Save_Thread.start()
@@ -106,7 +108,11 @@ class VentanaPrincipal(QtGui.QWidget):
         btnGrafCPU.clicked.connect(self.ordenar_cpu)
         btnOrden.clicked.connect(self.ordenar_pid)
         self.btnEliminar.clicked.connect(self.Eliminar)
-        self.btnMapFolders.clicked.connect(self.map_folders)
+
+
+
+
+        
 
 
         # ------------------------------Botones!------------------------------------------
@@ -190,6 +196,16 @@ class VentanaPrincipal(QtGui.QWidget):
     def done(self):
         self.btnMapDisk.setEnable(False)
 
+    def enableButton_limpiar(self):
+        self.btnBrrCache.setEnable(True)
+    def done_limpiar(self):
+        self.btnBrrCache.setEnable(False)
+
+    def enableButton_Folders(self):
+        self.btnMapFolders.setEnable(True)
+    def done_Folders(self):
+        self.btnMapFolders.setEnable(False)
+
     # --------------------Boton presionado con thread-----------------------
 
 
@@ -227,6 +243,39 @@ class VentanaPrincipal(QtGui.QWidget):
         self.thread_MapDisk.start()
 
     # --------------------Map Disk Button----------------------
+
+    #------------------------Limpiar Cache Button ------------------
+
+    def setup_Limpiar_Thread(self):
+        self.thread_Limpiar = QtCore.QThread()
+        self.worker_Limpiar = Limpiar_worker()
+
+        self.worker_Limpiar.moveToThread(self.thread_Limpiar)
+
+        self.btnBrrCache.clicked.connect(self.worker_Limpiar.borrar_cache)
+        self.worker_Limpiar.wait_for_input.connect(self.enableButton_limpiar)
+        self.worker_Limpiar.done.connect(self.done_limpiar)
+
+        self.thread_Limpiar.start()
+
+    #------------------------Limpiar Cache Button ------------------
+
+    #------------------------Map Folder Button ---------------------
+
+    def setup_Folders_Thread(self):
+        self.thread_Folders = QtCore.QThread()
+        self.worker_Folders = Folders_worker()
+
+        self.worker_Folders.moveToThread(self.thread_Folders)
+
+        self.btnMapFolders.clicked.connect(self.worker_Folders.map_folders)
+        self.worker_Folders.wait_for_input.connect(self.enableButton_Folders)
+        self.worker_Folders.done.connect(self.done_Folders)
+
+        self.thread_Folders.start()
+
+    #------------------------Map Folder Button ---------------------
+
     def ordenar_mem(self):
         if Lista.MEM==True:
             Lista.Reverse=not (Lista.Reverse)
@@ -255,8 +304,23 @@ class VentanaPrincipal(QtGui.QWidget):
             pass
         self.pidSelec=None
 
+    #----------------Map Folders -------------------------------
+class Folders_worker(QtCore.QObject):
+    wait_for_input=QtCore.pyqtSignal()
+    done = QtCore.pyqtSignal()
+
     def map_folders(self):
-        os.system('baobab /')       
+        os.system('baobab /')
+
+    #-------------------Borrar Cache y Ram --------------------------
+class Limpiar_worker(QtCore.QObject):
+    wait_for_input=QtCore.pyqtSignal()
+    done = QtCore.pyqtSignal()
+
+    def borrar_cache(self):
+        os.system(" sudo sh -c 'echo 3 >/proc/sys/vm/drop_caches'")
+        os.system(" sudo swapoff -a")
+        os.system(" sudo swapon -a")
 
 
 # --------------------Map Disk ----------------------
@@ -372,9 +436,9 @@ class Background_Save_Thread(QtCore.QThread):
     def run (self):
         while True:
             time.sleep(3)
-            print 'saving'
+            #print 'saving'
             Lista.Salvar()
-            print 'done'
+            #print 'done'
             time.sleep(3)
 
 
@@ -765,7 +829,7 @@ class Lista:
             statsinfo = os.stat('Task_Manager_Stats_%s.txt' % cont)
 
         date=datetime.datetime.now()
-        print date.strftime("%Y-%m-%d %H:%M")
+        #print date.strftime("%Y-%m-%d %H:%M")
         archi.write(str(date.strftime("%Y-%m-%d %H:%M"))+"\n")
         proc_temp = self.head
         while proc_temp != None:
