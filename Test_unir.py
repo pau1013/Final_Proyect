@@ -843,8 +843,6 @@ class Lista:
 
 
 
-
-
 def Crear_Lista(): #Regresa una lista con todos los procesos actuales
     List=Lista()
     thread_procesos=[]
