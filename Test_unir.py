@@ -58,7 +58,7 @@ class VentanaPrincipal(QtGui.QWidget):
     def initUI(self):
         self.setGeometry(600, 400, 750, 500)
         self.setWindowTitle('Task Manager')
-        self.setFixedSize(900, 550)
+        self.setFixedSize(1100, 550)
 
         self.grid = QtGui.QGridLayout()
         self.setLayout(self.grid)
@@ -129,6 +129,10 @@ class VentanaPrincipal(QtGui.QWidget):
         self.grid.addWidget(self.canvas2, 1, 1)
         #self.toolbar = NavigationToolbar(self.canvas,self)
 
+        self.a = QtGui.QStatusBar(self)
+        self.grid.addWidget(self.a)
+        self.a.showMessage("System Status | Normal")
+
 
         self.show()
 
@@ -161,7 +165,7 @@ class VentanaPrincipal(QtGui.QWidget):
         # Tamano de la tabla
         self.table.resizeColumnsToContents()
         self.table.resizeRowsToContents()
-        self.table.setFixedSize(575, 250)
+        self.table.setFixedSize(650, 250)
 
         self.grid.addWidget(self.table, 0, 0)
 
