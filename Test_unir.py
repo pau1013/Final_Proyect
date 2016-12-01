@@ -349,15 +349,15 @@ class Map_Disk_worker(QtCore.QObject):
         cont = 0
 
         # print("Imagenes: ")
-        mapa = ["*.png", "*.JPG", "*.jpg", "*.jpeg", "*.gif", "*.bmp", "*.dib", "*.tif", "*.bw", "*.cdr", "*.cgm", "*.gih",
-                "*.ico", "*.iff", "*.cpt", "*.mac", "*.pic", "*.pict", "*.pntg", "*.psd", "*.pix", "*.img"]
+        mapa = ["*.png", "*.jpg", "*.jpeg", "*.gif", "*.bmp", "*.dib", "*.tif", "*.bw", "*.cdr", "*.cgm", "*.gih",
+                "*.ico", "*.iff", "*.cpt", "*.mac", "*.pic", "*.pict", "*.pntg", "*.psd", "*.pix", "*.img", "*.JPG"]
         cont = self.get_mapa(mapa)
         lista.append(cont)
         cont = 0
 
         # print("Videos: ")
-        mapa = ["*.avi", "*.mov", "*.wmv", "*.mng", "*.qt", "*.dvd", "*.movie", "*.mpeg", "*.mpa", "*.mpv2", "*.divx",
-                "*.div", "*.mp2v", "*.bik", "*.MOV"]
+        mapa = ["*.avi", "*.mov", "*.wmv","*.MOV", "*.mng", "*.qt", "*.dvd", "*.movie", "*.mpeg", "*.mpa", "*.mpv2", "*.divx",
+                "*.div", "*.mp2v", "*.bik"]
         cont = self.get_mapa(mapa)
         lista.append(cont)
         cont = 0
