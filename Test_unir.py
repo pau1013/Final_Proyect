@@ -16,6 +16,7 @@ from subprocess import signal
 import plotly.plotly as py
 import plotly.graph_objs as go
 from PIL import Image, ImageTk
+import operator
 
 py.sign_in('pau_1013', '6jnl8o6nbd')
 
@@ -53,6 +54,11 @@ class VentanaPrincipal(QtGui.QWidget):
         self.setup_Update_Thread.start()
 
         self.connect(self.setup_Update_Thread, QtCore.SIGNAL('Lista'),self.proc_table)
+
+        self.statusBar_Update=Background_StatusBar()
+        self.statusBar_Update.start()
+        self.connect(self.statusBar_Update, QtCore.SIGNAL('Mem_Usage'),self.status_Bar_mem)
+        self.connect(self.statusBar_Update, QtCore.SIGNAL('Cpu_Usage'),self.status_Bar_cpu)
 
 
     def initUI(self):
@@ -129,12 +135,30 @@ class VentanaPrincipal(QtGui.QWidget):
         self.grid.addWidget(self.canvas2, 1, 1)
         #self.toolbar = NavigationToolbar(self.canvas,self)
 
-        self.a = QtGui.QStatusBar(self)
-        self.grid.addWidget(self.a)
-        self.a.showMessage("System Status | Normal")
+        self.statusbar = QtGui.QStatusBar(self)
+        self.grid.addWidget(self.statusbar)
+        self.statusbar.showMessage("System Status | Normal")
 
 
         self.show()
+
+    def status_Bar_mem(self,mem):
+        for proc in mem:
+            if proc[1] >= 1700:
+                self.statusbar.showMessage('Alto uso de memoria, utilizar funcion de Borrar Cache')
+
+            if proc[1] > 1500 and proc[1] < 1700:
+                name = str(proc[0])
+                self.statusbar.showMessage(name + ' esta utilizando demasiada memoria, revisar proceso')     
+        #self.statusbar.showMessage("Llego algo")
+
+    def status_Bar_cpu(self,cpu):
+        for proc in cpu:
+            if cpu[1] > 40:
+                name = str(proc[0])
+                self.statusbar.showMessage(name + ' esta utilizando alto porcentaje de CPU, revisar proceso')
+            else:
+                self.statusbar.showMessage('CPU Estable')
 
     def proc_table(self, Lista):
 
@@ -176,7 +200,7 @@ class VentanaPrincipal(QtGui.QWidget):
         ax = self.figure.add_subplot(111)
         ax.hold(False)
         ax.plot(data, 'b.-')
-        ax.set_ylim([0,6])
+        ax.set_ylim([0,8])
         self.canvas.draw()
         
 
@@ -456,6 +480,7 @@ class Background_Update_Thread(QtCore.QThread):
         super(Background_Update_Thread, self).__init__(parent)
 
     def run(self):
+        global updt
         while True:
 
             Lista.Vaciar()
@@ -465,7 +490,8 @@ class Background_Update_Thread(QtCore.QThread):
             Lista.reverse()
             Lista.imprimir()
             self.emit(QtCore.SIGNAL('Lista'), Lista)
-            time.sleep(7)
+            updt=True
+            time.sleep(5)
 
 
 
@@ -503,6 +529,42 @@ class Background_Update_MEM_Graph(QtCore.QThread):
                 data.append(mem)
             self.emit(QtCore.SIGNAL('MEM_Data'), data)
 
+# ------------------Thread Status Bar Update ------------------------------
+class Background_StatusBar(QtCore.QThread):
+    def __init__(self, parent=None):
+        super(Background_StatusBar,self).__init__(parent)
+
+    def run(self):
+        global updt
+        mem_List=[]
+        cpu_List=[]
+        while True:
+            if updt==True:
+                updt=False
+                mem_List,cpu_List=mem_cpu_Lists()
+                self.emit(QtCore.SIGNAL('Mem_Usage'), mem_List)
+                self.emit(QtCore.SIGNAL('Cpu_Usage'), cpu_List)
+    
+def mem_cpu_Lists():
+
+        positions_List=[]
+        List_name=Lista.lista_name[:]
+        List_cpu=Lista.lista_cpu[:]
+        List_mem=Lista.lista_mem[:]
+
+        for i in range (len(List_name)):
+            if Lista.lista_name[i]!='root':
+                positions_List.append(i)
+
+        mem_list=[]
+        cpu_list=[]
+        for i in positions_List:
+            mem_list.append([List_name[i],List_mem[i]])
+            cpu_list.append([List_name[i], List_cpu[i]])
+
+        mem_list=sorted(mem_list,key=operator.itemgetter(1),reverse=True)
+        cpu_list= sorted(cpu_list, key=operator.itemgetter(1), reverse=True)
+        return mem_list, cpu_list
 ###########################################################################################################
 
 class procs: #proc es un objeto de la clase psutil del cual podemos obtener toda la informacion de un proceso
@@ -875,6 +937,8 @@ if __name__ == '__main__':
     Lista.PID=True
     Lista.Ordenar(Lista.PID,Lista.CPU,Lista.MEM)
     Lista.imprimir()
+    global updt
+    updt=False
 
     main()
 
