@@ -81,6 +81,7 @@ class VentanaPrincipal(QtGui.QWidget):
         self.btnMapDisk = QtGui.QPushButton('Map Disk', self)
         self.btnBrrCache=QtGui.QPushButton('Borrar Cache',self)
         self.btnMapFolders=QtGui.QPushButton('Map Folders',self)
+        self.btnpopup = QtGui.QPushButton('Popup', self)
 
 #<<<<<<< HEAD
         # self.btnEliminar.setFixedSize(75,75)  #Tamano de botones
@@ -101,6 +102,7 @@ class VentanaPrincipal(QtGui.QWidget):
         self.btnMapDisk.setFixedSize(155,75)
         self.btnBrrCache.setFixedSize(115, 30)
         self.btnMapFolders.setFixedSize(115, 30)
+        self.btnpopup.setFixedSize(115, 30)
 
         self.btnEliminar.move(115,315)
         btnOrden.move(0,315)
@@ -109,16 +111,13 @@ class VentanaPrincipal(QtGui.QWidget):
         self.btnMapDisk.move(270,315)
         self.btnBrrCache.move(0,400)
         self.btnMapFolders.move(115,400)
+        self.btnpopup.move(230, 400)
 
         btnGrafMem.clicked.connect(self.ordenar_mem)
         btnGrafCPU.clicked.connect(self.ordenar_cpu)
         btnOrden.clicked.connect(self.ordenar_pid)
         self.btnEliminar.clicked.connect(self.Eliminar)
-
-
-
-
-        
+        self.btnpopup.clicked.connect(self.Popup)
 
 
         # ------------------------------Botones!------------------------------------------
@@ -194,6 +193,7 @@ class VentanaPrincipal(QtGui.QWidget):
         self.grid.addWidget(self.table, 0, 0)
 
         self.table.cellClicked.connect(self.seleccionaProceso) #Para seleccionar proceso
+        self.table.cellClicked.connect(self.selecciona)
         #------------------------------Tabla de Procesos------------------------------------------
 
     def graficaMemoria(self, data):
@@ -217,6 +217,11 @@ class VentanaPrincipal(QtGui.QWidget):
         self.pidSelec=int(self.pidSelec)
         print("PID: "+ str(self.pidSelec))
 
+    def selecciona(self, row, column):
+        print("Row %d and Column %d was clicked" % (row, column))
+        self.pidSelec2 = self.table.item(row, 2).text()
+        self.pidSelec2 = str(self.pidSelec2)
+        print("Proceso: " + self.pidSelec2)
 
     # --------------------Boton presionado con thread-----------------------
     def enableButton(self):
@@ -331,6 +336,15 @@ class VentanaPrincipal(QtGui.QWidget):
         except:
             pass
         self.pidSelec=None
+
+    def Popup(self): #selecciona un proceso y lo trae al frente
+        try:
+            os.system("wmctrl -a {0}".format(self.pidSelec2))
+        except:
+            pass
+        self.pidSelec2 = None
+
+
 
     #----------------Map Folders -------------------------------
 class Folders_worker(QtCore.QObject):
@@ -491,7 +505,7 @@ class Background_Update_Thread(QtCore.QThread):
             Lista.imprimir()
             self.emit(QtCore.SIGNAL('Lista'), Lista)
             updt=True
-            time.sleep(5)
+            time.sleep(10)
 
 
 
