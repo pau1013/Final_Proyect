@@ -75,14 +75,14 @@ class VentanaPrincipal(QtGui.QWidget):
         self.gtMemProcess = []
         self.gtCpuProcess=[]
         #------------------------------Botones!------------------------------------------
-        self.btnEliminar = QtGui.QPushButton('Kill', self)
+        self.btnEliminar = QtGui.QPushButton('Matar', self)
         btnGrafCPU = QtGui.QPushButton('Ordenar CPU', self)            #############cambie de proc a cpu
         btnGrafMem= QtGui.QPushButton('Ordenar Memoria', self)
         btnOrden = QtGui.QPushButton('Ordenar PID', self)
         self.btnMapDisk = QtGui.QPushButton('Map Disk', self)
         self.btnBrrCache=QtGui.QPushButton('Borrar Cache',self)
         self.btnMapFolders=QtGui.QPushButton('Map Folders',self)
-        self.btnpopup = QtGui.QPushButton('Popup', self)
+        self.btnpopup = QtGui.QPushButton('Traer al Frente', self)
 
 #<<<<<<< HEAD
         # self.btnEliminar.setFixedSize(75,75)  #Tamano de botones
@@ -543,7 +543,7 @@ class Background_Update_Thread(QtCore.QThread):
             Lista.imprimir()
             self.emit(QtCore.SIGNAL('Lista'), Lista)
             updt=True
-            time.sleep(10)
+            time.sleep(5)
 
 
 
