@@ -93,7 +93,22 @@ O dentro de la lista enlazada de procs:
 
         return total, used, free, percent
 
-                    
+	Por archivos se utiliza os.walk para recorrer todos los archivos dentro de la computadora y fnmatch.filter para determinar si la terminacion del archivo es igual a el arvhico que se esta leyendo y de esta manera aumentar el contador: 
+
+def get_mapa(self,m):
+   cont = 0
+   for root, dirnames, filenames in os.walk(raiz):
+       for extension in m:
+           for filename in fnmatch.filter(filenames, extension):
+               cont = cont + os.stat(os.path.join(root, filename)).st_size
+   return cont
+
+	Se utiliza Plotly para graficar los porcentajes de archivos utilizados:
+
+		py.image.save_as(fig, 'Map_Disk.png')
+
+	Se utiliza "Baobab" o Disk Usage Analyzer para haver el mapeo de disco de acuerdo a los folders 
+
 6) Research Charts Libs	
 	La libreria para generación de gráficos que vamos a usar es la de "matplotlib". Hay dos formas de instalarla en ubuntu: la primera es con el comando: python get-pip.py, con este comando también se instalan las setuptools necesarias si es que no están instaladas. 
 	La segunda y más segura es con dos comandos: 
@@ -112,4 +127,13 @@ O dentro de la lista enlazada de procs:
 		plt.title('Procesos')
 		
 		plt.show()
-	
+7) Limpiar Memoria RAM y CACHE
+	Se utiliza os.system y el prograba debe ser corrido desde la terminal
+
+		def borrar_cache(self):
+		os.system(" sudo sh -c 'echo 3 >/proc/sys/vm/drop_caches'")
+		os.system(" sudo swapoff -a")
+		os.system(" sudo swapon -a")
+
+8) Recomendaciones
+	En base al porcentaje de CPU y cantidad de Memoria siendo utilizado se le manda al usuario una recomendacion para que haga algo al respecto sobre cierto proceso que esta ocupando mas espacio que los demas. 
