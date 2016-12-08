@@ -72,7 +72,8 @@ class VentanaPrincipal(QtGui.QWidget):
 
         #aqui estaba tabla proc
 
-
+        self.gtMemProcess = []
+        self.gtCpuProcess=[]
         #------------------------------Botones!------------------------------------------
         self.btnEliminar = QtGui.QPushButton('Kill', self)
         btnGrafCPU = QtGui.QPushButton('Ordenar CPU', self)            #############cambie de proc a cpu
@@ -142,7 +143,26 @@ class VentanaPrincipal(QtGui.QWidget):
         self.show()
 
     def status_Bar_mem(self,mem):
+
+        if not self.gtMemProcess:
+            proc=mem[0]
+            self.gtMemProcess=[proc[0],proc[1],1]
+
+        temp=[]
         for proc in mem:
+            if not temp:
+                temp=proc
+            else:
+                if proc[1]>temp[1]:
+                    temp=proc
+
+        if temp[0]==self.gtMemProcess[0]:
+            self.gtMemProcess[2]=self.gtMemProcess[2]+1
+        else:
+            self.gtMemProcess = [proc[0], proc[1], 1]
+
+        if self.gtMemProcess[2]==3:
+            proc=self.gtMemProcess
             if proc[1] >= 1700:
                 self.statusbar.showMessage('Alto uso de memoria, utilizar funcion de Borrar Cache')
 
@@ -152,7 +172,25 @@ class VentanaPrincipal(QtGui.QWidget):
         #self.statusbar.showMessage("Llego algo")
 
     def status_Bar_cpu(self,cpu):
+        if not self.gtCpuProcess:
+            proc=cpu[0]
+            self.gtCpuProcess=[proc[0],proc[1],1]
+
+        temp=[]
         for proc in cpu:
+            if not temp:
+                temp=proc
+            else:
+                if proc[1]>temp[1]:
+                    temp=proc
+
+        if temp[0]==self.gtCpuProcess[0]:
+            self.gtCpuProcess[2]=self.gtCpuProcess[2]+1
+        else:
+            self.gtCpuProcess = [proc[0], proc[1], 1]
+
+        if self.gtCpuProcess[2]==3:
+            cpu=self.gtMemProcess
             if cpu[1] > 40:
                 name = str(proc[0])
                 self.statusbar.showMessage(name + ' esta utilizando alto porcentaje de CPU, revisar proceso')
